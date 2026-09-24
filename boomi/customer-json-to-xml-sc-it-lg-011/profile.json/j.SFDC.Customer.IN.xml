@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bns:Component xmlns:bns="http://api.platform.boomi.com/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               componentId="a1e8c5b2-f40d-43e2-9fd6-75c2855d666c"
+               name="j.SFDC.Customer.IN"
+               type="profile.json"
+               folderId="Rjo4ODYwODg3">
+  <bns:encryptedValues/>
+  <bns:description>SC-IT-LG-011 source: SFDC Customer {"customerName","customerId","phoneNumber","city"}, all strings. | built with boomi-companion v1.0.64</bns:description>
+  <bns:object>
+    <JSONProfile strict="false">
+      <DataElements>
+        <JSONRootValue dataType="character" isMappable="true" isNode="true" key="1" name="Root">
+          <DataFormat><ProfileCharacterFormat/></DataFormat>
+          <JSONObject isMappable="false" isNode="true" key="2" name="Object">
+            <JSONObjectEntry dataType="character" isMappable="true" isNode="true" key="3" name="customerName">
+              <DataFormat><ProfileCharacterFormat/></DataFormat>
+            </JSONObjectEntry>
+            <JSONObjectEntry dataType="character" isMappable="true" isNode="true" key="4" name="customerId">
+              <DataFormat><ProfileCharacterFormat/></DataFormat>
+            </JSONObjectEntry>
+            <JSONObjectEntry dataType="character" isMappable="true" isNode="true" key="5" name="phoneNumber">
+              <DataFormat><ProfileCharacterFormat/></DataFormat>
+            </JSONObjectEntry>
+            <JSONObjectEntry dataType="character" isMappable="true" isNode="true" key="6" name="city">
+              <DataFormat><ProfileCharacterFormat/></DataFormat>
+            </JSONObjectEntry>
+          </JSONObject>
+          <Qualifiers><QualifierList/></Qualifiers>
+        </JSONRootValue>
+      </DataElements>
+      <tagLists/>
+    </JSONProfile>
+  </bns:object>
+</bns:Component>

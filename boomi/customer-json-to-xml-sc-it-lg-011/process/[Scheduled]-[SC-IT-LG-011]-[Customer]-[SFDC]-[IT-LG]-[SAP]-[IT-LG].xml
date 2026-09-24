@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bns:Component xmlns:bns="http://api.platform.boomi.com/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               componentId="c8ccd358-bbbb-4b3b-a7a3-cce09d434377"
+               folderId="Rjo4ODYwODg3"
+               name="[Scheduled]-[SC-IT-LG-011]-[Customer]-[SFDC]-[IT-LG]-[SAP]-[IT-LG]"
+               type="process">
+  <bns:encryptedValues/>
+  <bns:description>Scheduled. Converts SFDC Customer JSON (customerName, customerId, phoneNumber, city) to SAP Customer XML. The Message step is a placeholder for the SFDC source; the Stop step is a placeholder for the SAP send. Tracking field: customerId (DDP_customerId). | built with boomi-companion v1.0.64</bns:description>
+  <bns:object>
+    <process allowSimultaneous="false" enableUserLog="false" processLogOnErrorOnly="false" purgeDataImmediately="false" stopProcessingIfZeroDocuments="true" updateRunDates="true" workload="general">
+      <shapes>
+        <shape image="start" name="shape1" shapetype="start" userlabel="" x="48.0" y="46.0">
+          <configuration>
+            <noaction/>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape1.dragpoint1" toShape="shape2" x="224.0" y="56.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="catcherrors_icon" name="shape2" shapetype="catcherrors" userlabel="" x="240.0" y="48.0">
+          <configuration>
+            <catcherrors catchAll="true" retryCount="0"/>
+          </configuration>
+          <dragpoints>
+            <dragpoint identifier="default" name="shape2.dragpoint1" text="Try" toShape="shape3" x="416.0" y="56.0"/>
+            <dragpoint identifier="error" name="shape2.dragpoint2" text="Catch" toShape="shape7" x="320.0" y="200.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="message_icon" name="shape3" shapetype="message" userlabel="PLACEHOLDER - SFDC Customer source" x="432.0" y="48.0">
+          <configuration>
+            <message combined="false">
+              <msgTxt>'{"customerName":"Jan Kowalski","customerId":"CUST-0001","phoneNumber":"+48 22 123 4567","city":"Warszawa"}'</msgTxt>
+              <msgParameters/>
+            </message>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape3.dragpoint1" toShape="shape4" x="608.0" y="56.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape4" shapetype="documentproperties" userlabel="Set tracking field customerId" x="624.0" y="48.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isDynamicCredential="false" isTradingPartner="false"
+                                name="Dynamic Document Property - DDP_customerId" persist="false"
+                                propertyId="dynamicdocument.DDP_customerId" shouldEncrypt="false">
+                <sourcevalues>
+                  <parametervalue key="0" valueType="profile">
+                    <profileelement elementId="4" elementName="customerId (Root/Object/customerId)"
+                                    profileId="a1e8c5b2-f40d-43e2-9fd6-75c2855d666c" profileType="profile.json"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape4.dragpoint1" toShape="shape5" x="800.0" y="56.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="map_icon" name="shape5" shapetype="map" userlabel="SFDC Customer JSON to SAP Customer XML" x="816.0" y="48.0">
+          <configuration>
+            <map mapId="af005dfc-a42d-44bb-b4ea-a858b84f9d8d"/>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape5.dragpoint1" toShape="shape6" x="992.0" y="56.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="stop_icon" name="shape6" shapetype="stop" userlabel="PLACEHOLDER - SAP send" x="1008.0" y="48.0">
+          <configuration>
+            <stop continue="true"/>
+          </configuration>
+          <dragpoints/>
+        </shape>
+        <shape image="documentproperties_icon" name="shape7" shapetype="documentproperties" userlabel="Set DDP_MED_NS_Msg" x="336.0" y="192.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isDynamicCredential="false" isTradingPartner="false"
+                                name="Dynamic Document Property - DDP_MED_NS_Msg" persist="false"
+                                propertyId="dynamicdocument.DDP_MED_NS_Msg" shouldEncrypt="false">
+                <sourcevalues>
+                  <parametervalue key="0" valueType="track">
+                    <trackparameter defaultValue="" propertyId="meta.base.catcherrorsmessage"
+                                    propertyName="Base - Try/Catch Message"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape7.dragpoint1" toShape="shape8" x="512.0" y="200.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="processcall_icon" name="shape8" shapetype="processcall" userlabel="[MED] (sub) CACHE Notification Facade" x="528.0" y="192.0">
+          <configuration>
+            <processcall abort="true" processId="338df4f8-af86-44f9-855c-943d8d0d478f" wait="true">
+              <parameters/>
+              <returnpaths/>
+            </processcall>
+          </configuration>
+          <dragpoints/>
+        </shape>
+      </shapes>
+    </process>
+  </bns:object>
+  <bns:processOverrides/>
+</bns:Component>

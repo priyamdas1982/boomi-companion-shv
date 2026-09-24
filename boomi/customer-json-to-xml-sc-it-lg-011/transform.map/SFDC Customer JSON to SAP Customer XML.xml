@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bns:Component xmlns:bns="http://api.platform.boomi.com/"
+               componentId="af005dfc-a42d-44bb-b4ea-a858b84f9d8d"
+               folderId="Rjo4ODYwODg3"
+               name="SFDC Customer JSON to SAP Customer XML"
+               type="transform.map">
+  <bns:description>built with boomi-companion v1.0.64</bns:description><bns:object>
+    <Map fromProfile="a1e8c5b2-f40d-43e2-9fd6-75c2855d666c" toProfile="8724bec2-a21d-4855-8728-571fb8b12609">
+      <Mappings>
+        <!-- customerName -> Customer/CustomerName -->
+        <Mapping fromKey="3" fromType="profile" toKey="2" toType="profile"/>
+        <!-- customerId   -> Customer/CustomerId -->
+        <Mapping fromKey="4" fromType="profile" toKey="3" toType="profile"/>
+        <!-- phoneNumber  -> Customer/PhoneNumber -->
+        <Mapping fromKey="5" fromType="profile" toKey="4" toType="profile"/>
+        <!-- city         -> Customer/City -->
+        <Mapping fromKey="6" fromType="profile" toKey="5" toType="profile"/>
+      </Mappings>
+      <Functions/>
+      <Defaults/>
+      <DocumentCacheJoins/>
+    </Map>
+  </bns:object>
+</bns:Component>
