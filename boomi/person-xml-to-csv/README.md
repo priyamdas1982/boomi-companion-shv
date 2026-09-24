@@ -54,7 +54,15 @@ Sample input and expected output are in `samples/`.
 | `transform.map/SC-IT-LG-006_Person_XML_to_CSV_Map.xml` | `transform.map` | SC-IT-LG-006 Person XML to CSV Map |
 | `process/SC-IT-LG-006_Person_SAP_to_Common.xml` | `process` | `[Scheduled]-[SC-IT-LG-006]-[Person]-[SAP]-[IT-LG]-[Common]-[IT-LG]` |
 
-None of these components exist on the platform yet.
+Created on the `main` branch in folder `SHV Energy N.V./01-Sandbox/01-Users/Priyam/BC/IT-LG/Enterprise Projects/Common/Scheduled/SC-IT-LG-006-Person` (`Rjo4ODYwMzk3`). Not deployed yet.
+
+| Component | ID |
+|-----------|----|
+| SC-IT-LG-006 Person XML Profile | `e8534329-2283-49a7-aa23-dff4be27ba37` |
+| SC-IT-LG-006 Person CSV Profile | `a869b8e1-bd42-46f4-a563-744431d69f58` |
+| SC-IT-LG-006 Person XML to CSV Map | `6c0775e5-04fd-4ddc-9109-97f2193c7592` |
+| `[Scheduled]-[SC-IT-LG-006]-[Person]-[SAP]-[IT-LG]-[Common]-[IT-LG]` | `a60ed4ff-4ee2-4bcb-bd8d-c0f248bc68d1` |
+| `[MED] (sub) CACHE Notification Facade` (existing, called from the catch path) | `338df4f8-af86-44f9-855c-943d8d0d478f` |
 
 ## Loading onto the platform with the bc-integration plugin
 
