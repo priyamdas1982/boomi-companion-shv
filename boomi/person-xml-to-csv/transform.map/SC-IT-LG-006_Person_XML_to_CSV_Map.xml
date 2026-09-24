@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bns:Component xmlns:bns="http://api.platform.boomi.com/"
+               componentId=""
+               folderId="{{FOLDER_ID}}"
+               name="SC-IT-LG-006 Person XML to CSV Map"
+               type="transform.map">
+  <bns:object>
+    <Map fromProfile="{{XML_PROFILE_ID}}" toProfile="{{CSV_PROFILE_ID}}">
+      <Mappings>
+        <!-- Persons/Person/name     -> Record/name -->
+        <Mapping fromKey="3" fromType="profile" toKey="3" toType="profile"/>
+        <!-- Persons/Person/lastname -> Record/lastname -->
+        <Mapping fromKey="4" fromType="profile" toKey="4" toType="profile"/>
+      </Mappings>
+      <Functions/>
+      <Defaults/>
+      <DocumentCacheJoins/>
+    </Map>
+  </bns:object>
+</bns:Component>

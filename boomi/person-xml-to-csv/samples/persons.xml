@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Persons>
+  <Person>
+    <name>Marco</name>
+    <lastname>Rossi</lastname>
+  </Person>
+  <Person>
+    <name>Giulia</name>
+    <lastname>Bianchi</lastname>
+  </Person>
+  <Person>
+    <name>Luca</name>
+    <lastname>Esposito</lastname>
+  </Person>
+</Persons>

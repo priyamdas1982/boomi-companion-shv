@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bns:Component xmlns:bns="http://api.platform.boomi.com/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               componentId=""
+               folderId="{{FOLDER_ID}}"
+               name="[Scheduled]-[SC-IT-LG-006]-[Person]-[SAP]-[IT-LG]-[Common]-[IT-LG]"
+               type="process">
+  <bns:encryptedValues/>
+  <bns:description>Scheduled. Converts Persons XML (name, lastname) to CSV with a header row. The Message step is a placeholder for the SAP source; the Stop step is a placeholder for the Common target. Tracking field: lastname.</bns:description>
+  <bns:object>
+    <process allowSimultaneous="false" enableUserLog="false" processLogOnErrorOnly="false" purgeDataImmediately="false" stopProcessingIfZeroDocuments="true" updateRunDates="true" workload="general">
+      <shapes>
+        <shape image="start" name="shape1" shapetype="start" userlabel="" x="48.0" y="46.0">
+          <configuration>
+            <noaction/>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape1.dragpoint1" toShape="shape2" x="224.0" y="56.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="catcherrors_icon" name="shape2" shapetype="catcherrors" userlabel="" x="240.0" y="48.0">
+          <configuration>
+            <catcherrors catchAll="true" retryCount="0"/>
+          </configuration>
+          <dragpoints>
+            <dragpoint identifier="default" name="shape2.dragpoint1" text="Try" toShape="shape3" x="416.0" y="56.0"/>
+            <dragpoint identifier="error" name="shape2.dragpoint2" text="Catch" toShape="shape6" x="320.0" y="200.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="message_icon" name="shape3" shapetype="message" userlabel="PLACEHOLDER SAP Persons XML" x="432.0" y="48.0">
+          <configuration>
+            <message combined="false">
+              <msgTxt>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Persons&gt;
+  &lt;Person&gt;
+    &lt;name&gt;Marco&lt;/name&gt;
+    &lt;lastname&gt;Rossi&lt;/lastname&gt;
+  &lt;/Person&gt;
+  &lt;Person&gt;
+    &lt;name&gt;Giulia&lt;/name&gt;
+    &lt;lastname&gt;Bianchi&lt;/lastname&gt;
+  &lt;/Person&gt;
+  &lt;Person&gt;
+    &lt;name&gt;Luca&lt;/name&gt;
+    &lt;lastname&gt;Esposito&lt;/lastname&gt;
+  &lt;/Person&gt;
+&lt;/Persons&gt;</msgTxt>
+              <msgParameters/>
+            </message>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape3.dragpoint1" toShape="shape4" x="608.0" y="56.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="map_icon" name="shape4" shapetype="map" userlabel="Person XML to CSV" x="624.0" y="48.0">
+          <configuration>
+            <map mapId="{{MAP_ID}}"/>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape4.dragpoint1" toShape="shape5" x="800.0" y="56.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="stop_icon" name="shape5" shapetype="stop" userlabel="PLACEHOLDER Send to Common" x="816.0" y="48.0">
+          <configuration>
+            <stop continue="true"/>
+          </configuration>
+          <dragpoints/>
+        </shape>
+        <shape image="documentproperties_icon" name="shape6" shapetype="documentproperties" userlabel="Set DDP_MED_NS_Msg" x="336.0" y="192.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isDynamicCredential="false" isTradingPartner="false"
+                                name="Dynamic Document Property - DDP_MED_NS_Msg" persist="false"
+                                propertyId="dynamicdocument.DDP_MED_NS_Msg" shouldEncrypt="false">
+                <sourcevalues>
+                  <parametervalue key="0" valueType="track">
+                    <trackparameter defaultValue="" propertyId="meta.base.catcherrorsmessage"
+                                    propertyName="Base - Try/Catch Message"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape6.dragpoint1" toShape="shape7" x="512.0" y="200.0"/>
+          </dragpoints>
+        </shape>
+        <shape image="processcall_icon" name="shape7" shapetype="processcall" userlabel="[MED] (sub) CACHE Notification Facade" x="528.0" y="192.0">
+          <configuration>
+            <processcall abort="true" processId="{{CACHE_NOTIFICATION_FACADE_ID}}" wait="true">
+              <parameters/>
+              <returnpaths/>
+            </processcall>
+          </configuration>
+          <dragpoints/>
+        </shape>
+      </shapes>
+    </process>
+  </bns:object>
+  <bns:processOverrides/>
+</bns:Component>
