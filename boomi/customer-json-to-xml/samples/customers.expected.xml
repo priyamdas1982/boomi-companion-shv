@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Customers>
+  <Customer>
+    <CustomerID>C1001</CustomerID>
+    <CustomerName>Jane Smith</CustomerName>
+    <PhoneNumber>+44-20-7946-0100</PhoneNumber>
+    <City>London</City>
+  </Customer>
+  <Customer>
+    <CustomerID>C1002</CustomerID>
+    <CustomerName>Rahul Mehta</CustomerName>
+    <PhoneNumber>+44-161-496-0200</PhoneNumber>
+    <City>Manchester</City>
+  </Customer>
+</Customers>

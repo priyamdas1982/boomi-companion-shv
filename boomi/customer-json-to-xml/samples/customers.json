@@ -1,0 +1,16 @@
+{
+  "customers": [
+    {
+      "customerId": "C1001",
+      "customerName": "Jane Smith",
+      "phoneNumber": "+44-20-7946-0100",
+      "city": "London"
+    },
+    {
+      "customerId": "C1002",
+      "customerName": "Rahul Mehta",
+      "phoneNumber": "+44-161-496-0200",
+      "city": "Manchester"
+    }
+  ]
+}
