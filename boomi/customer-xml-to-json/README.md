@@ -36,6 +36,18 @@ Sample input and expected output are in `samples/`.
 | `process/Customer_XML_to_JSON.xml` | `process` | Customer XML to JSON |
 | `process/TEST_Customer_XML_to_JSON.xml` | `process` | TEST Customer XML to JSON |
 
+## Platform component IDs
+
+Created on the `main` branch in folder `CustomerXmlToJson` (`Rjo4ODYwMTY0`). Not deployed yet.
+
+| Component | ID |
+|-----------|----|
+| Customer XML Profile | `05b7e8d3-c1c6-4e8d-87ac-c0edb4967226` |
+| Customer JSON Profile | `bf6c6535-ddb7-4bf1-8400-42ab82e4ea45` |
+| Customer XML to JSON Map | `d7c6d5a5-1f43-4405-a56a-a5b6ca717f73` |
+| Customer XML to JSON (process) | `51bca83d-f627-4c91-aca8-e7ec0929f087` |
+| TEST Customer XML to JSON (process) | `170cce66-d60b-4401-939c-7497ca22b7b7` |
+
 ## Deploying with the bc-integration plugin
 
 Create the components in dependency order. After each create, copy the generated component ID into the placeholders of the files that come after it:
