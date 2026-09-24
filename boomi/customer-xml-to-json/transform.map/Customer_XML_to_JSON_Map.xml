@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bns:Component xmlns:bns="http://api.platform.boomi.com/"
+               componentId=""
+               folderId="{{FOLDER_ID}}"
+               name="Customer XML to JSON Map"
+               type="transform.map">
+  <bns:object>
+    <Map fromProfile="{{XML_PROFILE_ID}}" toProfile="{{JSON_PROFILE_ID}}">
+      <Mappings>
+        <!-- Customers/Customer/CustomerID   -> customers[]/customerId -->
+        <Mapping fromKey="3" fromType="profile" toKey="7" toType="profile"/>
+        <!-- Customers/Customer/CustomerName -> customers[]/customerName -->
+        <Mapping fromKey="4" fromType="profile" toKey="8" toType="profile"/>
+        <!-- Customers/Customer/PhoneNumber  -> customers[]/phoneNumber -->
+        <Mapping fromKey="5" fromType="profile" toKey="9" toType="profile"/>
+      </Mappings>
+      <Functions/>
+      <Defaults/>
+      <DocumentCacheJoins/>
+    </Map>
+  </bns:object>
+</bns:Component>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Customers>
+  <Customer>
+    <CustomerID>C1001</CustomerID>
+    <CustomerName>Jane Smith</CustomerName>
+    <PhoneNumber>+1-555-0100</PhoneNumber>
+  </Customer>
+  <Customer>
+    <CustomerID>C1002</CustomerID>
+    <CustomerName>Rahul Mehta</CustomerName>
+    <PhoneNumber>+91-98765-43210</PhoneNumber>
+  </Customer>
+</Customers>

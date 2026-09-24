@@ -1,0 +1,14 @@
+{
+  "customers": [
+    {
+      "customerId": "C1001",
+      "customerName": "Jane Smith",
+      "phoneNumber": "+1-555-0100"
+    },
+    {
+      "customerId": "C1002",
+      "customerName": "Rahul Mehta",
+      "phoneNumber": "+91-98765-43210"
+    }
+  ]
+}
