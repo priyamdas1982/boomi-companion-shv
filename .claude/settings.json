@@ -10,10 +10,10 @@
   "enabledPlugins": {
     "bc-integration@boomi-companion": true
   },
-  "permissions": {
-    "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)"
-    ]
+
+    "permissions": {
+  "allow": ["Bash(bash /opt/bc-integration/skills/boomi-integration/scripts/*)"],
+  "deny": ["Read(./.env)", "Read(./.env.*)"]
+}
   }
 }
