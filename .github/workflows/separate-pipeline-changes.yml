@@ -1,0 +1,43 @@
+name: Separate pipeline changes
+
+# Fails a pull request that changes both interface deliverables (interfaces/**)
+# and the pipeline rules (.claude/** or CLAUDE.md), so rule changes are always
+# reviewed on their own.
+# interfaces/README.md and interfaces/_template/** are pipeline scaffolding, not
+# interface work, so they count as rule changes, not interface changes.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changed paths
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE_SHA...$HEAD_SHA")"
+          echo "Changed files:"
+          echo "$changed"
+
+          interfaces="$(echo "$changed" | grep -E '^interfaces/' \
+            | grep -Ev '^interfaces/(README\.md$|_template/)' || true)"
+          rules="$(echo "$changed" | grep -E '^(\.claude/|CLAUDE\.md$)' || true)"
+
+          if [ -n "$interfaces" ] && [ -n "$rules" ]; then
+            echo "::error::This pull request changes both interface files and pipeline rules. Split it into two pull requests."
+            echo "Interface files:"; echo "$interfaces"
+            echo "Pipeline rule files:"; echo "$rules"
+            exit 1
+          fi
+          echo "OK: interface files and pipeline rules are not changed together."

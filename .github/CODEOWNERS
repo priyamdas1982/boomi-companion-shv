@@ -1,0 +1,4 @@
+# Changes to the pipeline rules (agents, hooks, checklist, orchestrator) and to
+# CLAUDE.md need review from the owner below.
+/.claude/   @priyamdas1982
+/CLAUDE.md  @priyamdas1982
