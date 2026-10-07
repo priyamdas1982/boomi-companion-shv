@@ -2,4 +2,5 @@
 /hook-logs
 
 .env
+.env.*
 active-development/

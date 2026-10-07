@@ -163,3 +163,11 @@ Before calling that facade, set the DDP `DDP_MED_NS_Msg` to the Try/Catch messag
 ### Connector extensions
 
 All connector settings must be externalised as environment extensions. Make connection properties (such as URLs, hosts, ports and credentials) and operation properties extensible so the process can be promoted across environments without editing the component. Do not bake environment-specific connector values into the component XML.
+
+## Role pipeline
+
+The `/build-interface <ID>` command runs the designer, developer, reviewer and tester subagents in `.claude/agents/` for one interface. When running under it:
+
+1. The design spec the user approved in `interfaces/<ID>/design/` is the user's answer and confirmation for the process name, folder path, integration ID sequence number and tracking field. Roles do not ask for them again.
+2. A role that finds a required value missing stops and returns to the orchestrator, which asks the user. The role never invents the value.
+3. Each role writes only to its own folder under `interfaces/<ID>/`: the designer to `design/`, the developer to `build/`, the reviewer to `review/` and the tester to `test/`.
