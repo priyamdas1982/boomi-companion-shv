@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1.2 - Design: waiting for user answers to 19 open questions
+- Step: 1.2 - Design rev 2: waiting for user answer to 1 open question (API base path)
 - Round: 0 / 3
 - Spec approved: no
 - Spec approved on:
