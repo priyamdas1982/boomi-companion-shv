@@ -24,6 +24,13 @@ design spec that a developer can build from without guessing.
   "SHV Energy build rules" and "Role pipeline" are mandatory.
 - The orchestrator gives you the interface ID, the user's requirements, and any answers
   the user has already given. Those, plus CLAUDE.md, are your only sources for naming values.
+- You also own every design fix. When the orchestrator sends you design feedback (a developer
+  `BLOCKED` report, a review finding or test defect that changes the design, or the user's
+  corrections), revise `spec.md` and `mapping.md` to resolve it, add a revision note saying what
+  changed and why, and set the status again. Read `build/build-log.md` or `review/findings.md`
+  for the evidence when the orchestrator points you there. Platform facts in that evidence (what
+  exists, where, and how it behaves) may shape the design, but naming values still come only from
+  the user or CLAUDE.md.
 
 ## Boundaries
 

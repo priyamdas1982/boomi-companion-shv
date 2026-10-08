@@ -171,3 +171,4 @@ The `/build-interface <ID>` command runs the designer, developer, reviewer and t
 1. The design spec the user approved in `interfaces/<ID>/design/` is the user's answer and confirmation for the process name, folder path, integration ID sequence number and tracking field. Roles do not ask for them again.
 2. A role that finds a required value missing stops and returns to the orchestrator, which asks the user. The role never invents the value.
 3. Each role writes only to its own folder under `interfaces/<ID>/`: the designer to `design/`, the developer to `build/`, the reviewer to `review/` and the tester to `test/`.
+4. All design feedback goes to the designer: a developer `BLOCKED` report, a finding or defect whose fix changes the spec, and any change the user asks for. The designer fixes the spec, the user re-approves it, and then it goes back to the developer. No other role changes the design.

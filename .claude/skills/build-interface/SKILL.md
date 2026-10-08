@@ -52,7 +52,7 @@ naming, folder path, sequence number and tracking field. You do not ask for them
 
 Run **developer** in build mode.
 
-If it returns `BLOCKED`, handle it under "Missing values" below. Otherwise record the component IDs
+If it returns `BLOCKED`, handle it under "Design feedback loop" below. Otherwise record the component IDs
 in `pipeline-state.md` and set round = 1.
 
 ## Rounds: steps 3 to 5, at most three rounds
@@ -95,13 +95,29 @@ Run **tester** in `execute` mode for round N.
 
 Update `pipeline-state.md` after every step: step, round, open counts, disputed IDs, last test result.
 
-## Missing values
+## Design feedback loop
 
-When any role returns `BLOCKED: missing value` or reports an `OPEN` item:
+All feedback on the design goes through the **designer**. Neither you nor the developer change the design.
+Design feedback is:
 
-1. Ask the user a direct question for each specific missing value, with hints from CLAUDE.md. Do not investigate the platform to avoid asking.
-2. Run **designer** to add the answer to the spec.
-3. The spec has changed, so return to step 1.3 for re-approval and a new hash before any further building.
+- anything the developer returns as `BLOCKED` (a failed design check, a missing value, a component or folder
+  the spec names that does not exist, a design that cannot be built as written);
+- a review finding or test defect whose fix would change the spec rather than only the build;
+- any change, correction or answer from the user about the design, at any step.
+
+When design feedback arrives:
+
+1. If it needs a decision from the user, ask a direct question for each item, with the developer's evidence
+   and hints from CLAUDE.md. Do not investigate the platform to avoid asking.
+2. Run **designer** with the feedback: the user's words verbatim, and the developer's report or the
+   finding with its evidence. Tell it to point to `build/build-log.md` or `review/findings.md` for detail.
+3. If the designer returns open questions, put them to the user and run it again until the status is
+   `READY FOR APPROVAL`.
+4. The spec has changed, so return to step 1.3 for re-approval and a new hash.
+5. Then run **developer** in build mode again (step 2), or in fix mode if components already exist.
+
+Review findings and test defects that only need the build changed still go straight to the developer in
+step 4.
 
 `BLOCKED: environment` means the test environment could not be confirmed. Stop and ask the user;
 never point a role at production.

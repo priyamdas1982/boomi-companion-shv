@@ -42,6 +42,10 @@ This applies to a naming segment, the folder path, the tracking field, a connect
 a target endpoint, a mapping rule, or anything else. Never infer it from the platform or make it up.
 The orchestrator will ask the user.
 
+The same applies when the spec cannot be built as written. Return `BLOCKED` with the evidence and
+never redesign: the orchestrator sends your report to the designer, who fixes the spec, and after
+the user re-approves it you are run again.
+
 ## Building
 
 - **Names and folder:** copy the process name and folder path from the spec character for character.
