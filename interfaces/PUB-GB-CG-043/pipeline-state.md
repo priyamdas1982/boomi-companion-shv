@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 3 - Round 1 review done (1 blocker F-1-01 design change; 2 minor F-1-02, F-1-03 design changes). review/findings.md not saved: subagent write refused by harness - waiting for user. Test execution waits for web server credentials
+- Step: Design feedback loop (round 1 findings F-1-01, F-1-02, F-1-03 -> designer revision 6)
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 5")
 - Spec approved on: 2026-10-08 (revision 5; earlier approvals superseded)
