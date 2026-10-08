@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1 - Design
+- Step: 1.2 - Design: waiting for user answers to 19 open questions
 - Round: 0 / 3
 - Spec approved: no
 - Spec approved on:
