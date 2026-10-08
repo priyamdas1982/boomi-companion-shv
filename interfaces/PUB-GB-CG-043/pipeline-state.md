@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1.2 - Design rev 2: waiting for user answer to 1 open question (API base path)
+- Step: 1.4 - Design rev 3 READY FOR APPROVAL: waiting for user approval
 - Round: 0 / 3
 - Spec approved: no
 - Spec approved on:
