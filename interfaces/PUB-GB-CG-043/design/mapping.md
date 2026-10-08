@@ -1,6 +1,6 @@
 # Field mapping: PUB-GB-CG-043
 
-Revision 2. All earlier open items are resolved by the user's answers (Q10, Q11, Q12, Q13, Q9).
+Revision 3. All earlier open items are resolved by the user's answers (Q10, Q11, Q12, Q13, Q9). Revision 3 change: a functional error is no longer sent to any Kafka topic (user correction: "This message do not go to retry topic."). Field rules are unchanged.
 
 ## Request: Sitecore lead JSON -> Kafka message body
 
@@ -9,7 +9,7 @@ It is built from the sample in the design document section 1.2.4, corrected to v
 `"form-source":"HE Fuel Switch Enquiry"` is a document typo only (user Q10: "yes"). The comments field is named
 `additional-comments` (user Q11: "type", meaning the document's "addional-comments" is a typo).
 
-Target: the Kafka message body on `gb-cg.q.leads.in.insert` (and, on error, on `gb-cg.q.leads.in.retry`).
+Target: the Kafka message body on `gb-cg.q.leads.in.insert` (and, for a technical error after 3 retries only, on `gb-cg.q.leads.in.retry`). A body that fails the functional check (empty, not valid JSON, not a JSON object) is not published anywhere. It gets a 400 response.
 It is pass-through: the request body is published unchanged, with no Map step (user Q12: "unchanged").
 The rows below describe the contract. The developer must not add a map.
 
@@ -50,7 +50,7 @@ Corrected sample (test payload and profile source):
 
 | # | Source | Target | Transformation / rule | Required | Example |
 |---|--------|--------|-----------------------|----------|---------|
-| H1 | Static value | Kafka message header `Retry-Count` | Always `0` on every message, on both the main and the retry topic (user Q13). It is not used by this interface yet | Y | `0` |
+| H1 | Static value | Kafka message header `Retry-Count` | Always `0` on every message sent, on both the main and the retry topic (user Q13). Set on the valid path only, because the functional path sends nothing. It is not used by this interface yet | Y | `0` |
 | H2 | n/a | Kafka message key | None. No key is set (user Q13 asked only for the header) | N | (none) |
 
 ## Response: WSS output -> APIM / Sitecore
