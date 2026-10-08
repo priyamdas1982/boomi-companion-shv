@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 2 - Build BLOCKED (V4 facade has no Return Documents; folder path missing; Kafka connection choice; environment classification) - waiting for user
+- Step: 1.4 - Design rev 4 (design feedback loop after build BLOCKED) READY FOR APPROVAL: waiting for user re-approval
 - Round: 0 / 3
 - Spec approved: yes (user: "Yes, i approve the design spec")
 - Spec approved on: 2026-10-08 (revision 3)

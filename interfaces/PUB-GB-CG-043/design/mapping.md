@@ -1,6 +1,6 @@
 # Field mapping: PUB-GB-CG-043
 
-Revision 3. All earlier open items are resolved by the user's answers (Q10, Q11, Q12, Q13, Q9). Revision 3 change: a functional error is no longer sent to any Kafka topic (user correction: "This message do not go to retry topic."). Field rules are unchanged.
+Revision 4. All earlier open items are resolved by the user's answers (Q10, Q11, Q12, Q13, Q9). Revision 3 change: a functional error is no longer sent to any Kafka topic (user correction: "This message do not go to retry topic."). Revision 4 change: because of the user's "branch fix", the 400 response is built on branch 2 of a Branch shape, and the facade is called on branch 1. A DDP set on branch 1 does not reach branch 2. So the 400 `message` value (R2) now comes from Meta information "Base - Try/Catch Message" (`meta.base.catcherrorsmessage`), not from `DDP_MED_NS_Msg`. The text is the same. The reused Kafka connection is now `[Confluent_NL-HQ_Kafka]`, which does not affect any field. All other field rules are unchanged.
 
 ## Request: Sitecore lead JSON -> Kafka message body
 
@@ -60,4 +60,4 @@ Response profile: `PUB-GB-CG-043 Lead Response JSON` (C6). Built by Message step
 | # | Source | Target field / path | Transformation / rule | Required | Example |
 |---|--------|---------------------|-----------------------|----------|---------|
 | R1 | Static per outcome | `status` (root/status) | `accepted` (202), `rejected` (400) or `error` (500) | Y | `accepted` |
-| R2 | 202: omitted. 400: `DDP_MED_NS_Msg` (functional error text from script S1 via the Exception step). 500: fixed text | `message` (root/message) | Omitted on 202 (body is exactly `{"status":"accepted"}`, user Q9). 500 text is fixed so no sensitive data or connection detail is returned | N | `Functional error: request body is not valid JSON` |
+| R2 | 202: omitted. 400: Meta information "Base - Try/Catch Message" (`meta.base.catcherrorsmessage`), read on BR-F branch 2. It holds the functional error text from script S1 via the Exception step, the same text that BR-F branch 1 puts in `DDP_MED_NS_Msg`. 500: fixed text | `message` (root/message) | Omitted on 202 (body is exactly `{"status":"accepted"}`, user Q9). 400 must not read `DDP_MED_NS_Msg`, because that DDP is set on branch 1 and does not reach branch 2 (revision 4). 500 text is fixed so no sensitive data or connection detail is returned | N | `Functional error: request body is not valid JSON` |
