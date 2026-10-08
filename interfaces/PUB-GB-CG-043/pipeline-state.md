@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: Design feedback loop (round 1 findings F-1-01, F-1-02, F-1-03 -> designer revision 6)
+- Step: 1.4 - Design rev 6 READY FOR APPROVAL: waiting for user re-approval
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 5")
 - Spec approved on: 2026-10-08 (revision 5; earlier approvals superseded)
