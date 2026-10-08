@@ -1,8 +1,10 @@
 # Design spec: PUB-GB-CG-043
 
-Status: DRAFT - OPEN QUESTIONS
+Status: READY FOR APPROVAL
 
 Revision 5. This revision answers the developer's second BLOCKED report, which was raised against revision 4 (evidence: `interfaces/PUB-GB-CG-043/build/build-log.md`, section "Attempt 2"). It applies the user's decisions, which the orchestrator relayed verbatim: "1. b 2. a. fix in CLAUDE.md rule as well as an exception." Everything not listed under "Changes in revision 5" is unchanged from revision 4. The revision 4 change notes are kept below for history.
+
+Revision 5 finalised: the user answered open question 1 (failure-path test approach) verbatim: "C, review only for now". The technical-error path and the retry-send-failure path are verified by review only in this build. V1 for TC-T and V6 for BR-A stay unconfirmed and are recorded as follow-ups F2 and F3. Required value row 16 is closed. No questions remain open.
 
 ## Changes in revision 5
 
@@ -13,6 +15,7 @@ Revision 5. This revision answers the developer's second BLOCKED report, which w
 - **Test notes for the failure paths.** The technical-error and retry-send-failure tests no longer rely on topic extensions. Changing the shared connection or its `1-DEV` extension values is still forbidden. Three ways to run them are set out under "Failure-path test approach". Choosing one needs a user decision, which is open question 1.
 - **Extensions test** now checks that the connection fields are extensible on C1 and that C7/C8 have no operation overrides, under the CLAUDE.md exception.
 - **Developer checks:** V2 is withdrawn. D3 is marked passed (build log, Attempt 2). D5 is added for the route shape, and D6 for the connection override block.
+- **Failure-path tests decided (user: "C, review only for now").** Option C is applied. The technical-error test and the retry-send-failure test do not run in `1-DEV` in this build. The reviewer verifies both paths from the built process (checklist under "Failure-path test approach"). V1 for TC-T and V6 for BR-A stay unconfirmed and become follow-ups F2 and F3 for later testing. Row 16 is closed, open question 1 is removed, and the test notes are updated. All other tests still run in `1-DEV`.
 
 ## Changes in revision 4 (history)
 
@@ -47,6 +50,8 @@ Scope of this spec: **the Publisher only (PUB-GB-CG-043).**
 | # | Follow-up | Source |
 |---|-----------|--------|
 | F1 | Add the Kafka message header `Retry-Count` = `0` to every published message when the retry mechanism is designed. First find out how the Boomi Kafka connector sets a custom header, from Boomi documentation or a working example the user supplies. The original request was "header as 'Retry-COunt': 0 (we will use it later in retry mechanism, not for now)". | user Q13; user revision 5: "1. b" |
+| F2 | Confirm **V1 for TC-T** at runtime: an error on the TC-T catch path (a failed send to `gb-cg.q.leads.in.retry`) is caught by the enclosing TC-A. Run the technical-error test (main topic produce fails 1 + 3 times, one message on the retry topic, 202, facade not called) and the retry-send-failure test, using option A or B from "Failure-path test approach" or another approach the user approves. Not tested in this build. | user, open question 1: "C, review only for now" |
+| F3 | Confirm **V6 for BR-A** at runtime: on the TC-A catch path, BR-A branch 1 calls the facade once with `DDP_MED_NS_Msg` = the retry-send error, then BR-A branch 2 returns 500 `{"status":"error","message":"Technical error. The lead was not accepted."}`, and the HTTP response holds only the branch 2 document. Run with the retry-send-failure test in F2. Not tested in this build. | user, open question 1: "C, review only for now" |
 
 ## Required values
 
@@ -69,7 +74,7 @@ Scope of this spec: **the Publisher only (PUB-GB-CG-043).**
 | 13 | Build, deploy and test environment | `1-DEV`, ID 693e8bc2-46f8-4c7f-8259-8dcf6cf0f264, confirmed by the user as development | user, revision 4: "4. yes, 1-DEV is dev."; CLAUDE.md: SHV Energy naming and structure standards (Environment) |
 | 14 | Kafka topics fixed in C7/C8 (not extensible) | `gb-cg.q.leads.in.insert` in C7, `gb-cg.q.leads.in.retry` in C8, fixed in the operation components | user, revision 5: "2. a"; CLAUDE.md: SHV Energy build rules, Connector extensions, Exception |
 | 15 | Kafka message header | None in this build. `Retry-Count` deferred (F1) | user, revision 5: "1. b" |
-| 16 | Failure-path test approach (technical error, retry-send failure) | Not decided | OPEN (question 1) |
+| 16 | Failure-path test approach (technical error, retry-send failure) | Option C: not tested in `1-DEV` in this build; verified by review only. V1 for TC-T and V6 for BR-A stay unconfirmed (follow-ups F2, F3) | user, open question 1: "C, review only for now" |
 
 Source is one of: `user: "<answer>"`, `CLAUDE.md: <section>`, or `OPEN`.
 
@@ -176,12 +181,12 @@ These cover facts about the platform and environment that the local skill refere
 - **D4. Facade runtime.** The facade calls a Process Route (`[MED] Process Service`). Process Route targets are not bundled with the parent deploy (skill `process_route_step.md`). In the first functional-error test, confirm that the facade call completes without error in `1-DEV`. If it fails because a route target is not deployed there, stop and return to the orchestrator. Do not deploy or edit shared framework components.
 - **D5. API route (revision 5).** In C2, configure the single REST route with method POST, route object `leads` and an **empty URL path**. In the first test, confirm that a POST to `/ws/rest/gb-cg-leads/v1/leads` reaches C1 and that `/ws/rest/gb-cg-leads/v1/leads/leads` does not. If the effective path differs, stop and return to the orchestrator.
 - **D6. Connection override block (revision 5).** In C1, declare the C4 connection extensions by copying the platform-generated `processOverrides` connection block for c85b494e as it appears in 45 of the 46 account processes that declare one (17 fields, no xpath attributes). Do not hand-author it, and do not declare any operation overrides for C7 or C8 (CLAUDE.md: Connector extensions, Exception). After pushing C1, confirm with `boomi-extensions.sh get` that the connection fields appear for C1 in `1-DEV`. Do not run `set`.
-- **V1.** An error raised on the catch path of an inner Try/Catch (TC-T or TC-F), including on a Branch below it, must be caught by the enclosing TC-A. If the platform does not behave this way, the design would need a fourth Try/Catch. Do not add one. Stop and return to the orchestrator (CLAUDE.md: Error handling). How V1 is confirmed for TC-T depends on open question 1.
+- **V1.** An error raised on the catch path of an inner Try/Catch (TC-T or TC-F), including on a Branch below it, must be caught by the enclosing TC-A. If the platform does not behave this way, the design would need a fourth Try/Catch. Do not add one. Stop and return to the orchestrator (CLAUDE.md: Error handling). In this build V1 for TC-T is **not confirmed at runtime** (user: "C, review only for now"). The reviewer checks only that the TC-T catch path sits inside the TC-A try path. Runtime confirmation is follow-up F2. The TC-F part of V1 arises only if the facade call on BR-F branch 1 fails, and no test in this build exercises it.
 - **V2. Withdrawn in revision 5.** No Kafka header is set in this build (user: "1. b"; follow-up F1).
 - **V3.** HTTP response status: set it with the Web Services Server response status-code document property (Set Properties, Connector properties, Web Services Server). This is not documented locally. Confirm the exact property against Boomi documentation or an existing account process that sets it. Confirm the status in the first test of each outcome.
 - **V4. Resolved in revision 4.** The branch fix puts the response on branch 2, so it does not depend on the facade returning a document.
 - **V5.** The Exception step's text must reach the TC-F Try/Catch message as `Functional error: ...`, and that same text must be readable on BR-F branch 2. Confirm in the test log and in the 400 body.
-- **V6.** After the Process Call on branch 1 returns, the runtime runs branch 2. Confirm in the process log that, for one request, the facade runs first and then the 400 (or 500) Return Documents step runs. Confirm that the HTTP response contains only the branch 2 document.
+- **V6.** After the Process Call on branch 1 returns, the runtime runs branch 2. Confirm in the process log that, for one request, the facade runs first and then the 400 (or 500) Return Documents step runs. Confirm that the HTTP response contains only the branch 2 document. In this build V6 is confirmed for **BR-F only**, by the functional-error test. V6 for BR-A is **not confirmed at runtime** (user: "C, review only for now"). The reviewer checks the BR-A structure instead, and runtime confirmation is follow-up F3.
 - **Base path uniqueness.** Passed in Attempt 2: no API Service in the account uses `gb-cg-leads/v1`. Recheck just before deploying.
 - **Topic existence.** Both `gb-cg.q.leads.in.insert` and `gb-cg.q.leads.in.retry` exist on the cluster that `[Confluent_NL-HQ_Kafka]` points to in `1-DEV`. If not, stop and return to the orchestrator.
 
@@ -262,7 +267,18 @@ No other scripting. Status codes and response bodies use Set Properties and Mess
 
 ## Failure-path test approach
 
-Topics are fixed in C7 and C8, so they can no longer be broken through operation extensions. The shared connection and its `1-DEV` extension values must not be changed (D3). The technical-error and retry-send-failure paths need a Kafka produce to fail without touching either of those. There are three options. The user chooses in open question 1.
+**Decision: option C (user: "C, review only for now").** In this build the technical-error path (TC-T retries, then the retry topic) and the retry-send-failure path (TC-A catch, BR-A, facade, 500) are verified by review only. They are not run in `1-DEV`. Options A and B are kept below for the later runtime tests (follow-ups F2 and F3).
+
+Review checklist for these two paths (the reviewer checks the built C1 XML and records the evidence in `review/findings.md`; the tester refers to it):
+
+- R1. TC-T has retry count 3 and catches All errors. Its try path holds only the C7 produce, Set Properties "Response 202", Message "Accepted" and Return Documents "Accepted".
+- R2. The TC-T catch path goes to the C8 produce (topic `gb-cg.q.leads.in.retry`, fixed in C8), then Set Properties "Response 202 (parked)", Message "Accepted (parked)" and Return Documents "Accepted - parked on retry topic". There is no facade call, no Set Properties for `DDP_MED_NS_Msg` and no header or key on this path.
+- R3. TC-T (with its catch path) sits inside the TC-A try path, so an error on the TC-T catch path can reach TC-A. Runtime behaviour is unconfirmed (V1 for TC-T, F2).
+- R4. TC-A has retry count 0 and catches All errors. Its catch path goes to Branch BR-A with `numBranches="2"` and both dragpoints wired.
+- R5. BR-A branch 1: Set Properties `DDP_MED_NS_Msg` = Meta information "Base - Try/Catch Message", then a Process Call to C9 (338df4f8) with wait = true, abort = true and no return paths.
+- R6. BR-A branch 2: Set Properties HTTP status 500, Message `{"status":"error","message":"Technical error. The lead was not accepted."}`, Return Documents "Error". Runtime order and single-document response are unconfirmed (V6 for BR-A, F3).
+
+Background (from revision 5): topics are fixed in C7 and C8, so they can no longer be broken through operation extensions. The shared connection and its `1-DEV` extension values must not be changed (D3). The technical-error and retry-send-failure paths need a Kafka produce to fail without touching either of those. These were the three options:
 
 - **Option A: block topic writes on the Kafka side (recommended).** The Confluent cluster administrator temporarily removes write (produce) permission for the `1-DEV` Kafka principal used by `[Confluent_NL-HQ_Kafka]`, on these topics only:
   - Technical-error test: remove write on `gb-cg.q.leads.in.insert` only. Expected: 1 + 3 failed attempts on the main produce, one message on `gb-cg.q.leads.in.retry`, 202 `{"status":"accepted"}`, facade not called.
@@ -279,6 +295,8 @@ Topics are fixed in C7 and C8, so they can no longer be broken through operation
 
 All tests run in `1-DEV` (693e8bc2-46f8-4c7f-8259-8dcf6cf0f264) of account `shvenergynv-6R344K` only. Never change the `[Confluent_NL-HQ_Kafka]` component or its `1-DEV` extension values.
 
+Exception (user: "C, review only for now"): the **Technical error** and **Retry-send failure** rows are not run in `1-DEV` in this build. They are verified by review only (R1 to R6 under "Failure-path test approach"). The tester records each as "not tested in dev, verified by review" with a pointer to the review evidence, and records V1 for TC-T and V6 for BR-A as unconfirmed (follow-ups F2, F3). The tester must not break a topic, the connection or its extension values to force these paths. Every other row runs in `1-DEV`.
+
 | Requirement | Observable behaviour to check |
 |-------------|-------------------------------|
 | Naming and folder | The process is named exactly `[Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG]` and is in `SHV Energy N.V./01-Sandbox/01-Users/Priyam/BC/GB-CG/Enterprise Projects/Customer Portal/Publisher/PUB-GB-CG-043-Lead`. C2, C3 and C5 to C8 are in the same folder. Nothing new is in `.../Publisher/PUB-GB-CG-043-leads`. |
@@ -286,16 +304,13 @@ All tests run in `1-DEV` (693e8bc2-46f8-4c7f-8259-8dcf6cf0f264) of account `shve
 | Endpoint | API Service C2 is deployed with base path `gb-cg-leads/v1` and one route: POST, object `leads`, empty URL path. A POST to `/ws/rest/gb-cg-leads/v1/leads` reaches C1. `/ws/rest/gb-cg-leads/v1/leads/leads` does not (D5). |
 | Happy path | POST the valid sample lead JSON (see `mapping.md`). The response is 202 `{"status":"accepted"}` within 5 s. Exactly one message is on `gb-cg.q.leads.in.insert`. Its body is byte-for-byte the request, and it has **no custom headers and no key**. Nothing is on the retry topic. The facade is not called. |
 | Tracking field | Process Reporting shows tracked field `email` populated on the listen and produce operations. |
-| Technical error | Run as chosen in open question 1 (see "Failure-path test approach"). Expected behaviour whichever way it is run: 1 + 3 attempts on the main produce, then one message on `gb-cg.q.leads.in.retry` with the original body, no headers and no key. The response is 202 `{"status":"accepted"}`. The facade is not called. Topics and connection extension values are not changed in Boomi. Under option C, record "not tested in dev, verified by review" with the review evidence. |
+| Technical error | **Review only in this build** (user: "C, review only for now"; R1 to R3). Not run in `1-DEV`. Record "not tested in dev, verified by review" with the review evidence, and V1 for TC-T as unconfirmed (F2). Expected behaviour when it is later run (F2): 1 + 3 attempts on the main produce, then one message on `gb-cg.q.leads.in.retry` with the original body, no headers and no key. The response is 202 `{"status":"accepted"}`. The facade is not called. Topics and connection extension values are not changed in Boomi. |
 | Functional error | POST an empty body, a malformed JSON body (for example the document's original sample with the missing comma) and a JSON array. For each case: no retry; BR-F branch 1 calls the facade exactly once with `DDP_MED_NS_Msg` = the functional error text; then BR-F branch 2 returns 400 `{"status":"rejected","message":"Functional error: ..."}` with the same text (V5, V6); **nothing on the main topic and nothing on the retry topic**; no Kafka produce appears in the process log. The facade run completes without error (D4). |
-| Retry-send failure | Run as chosen in open question 1. Expected behaviour: after 1 + 3 attempts on the main topic and a failed retry-topic send, BR-A branch 1 calls the facade once with the retry-send error. Then BR-A branch 2 returns 500 `{"status":"error","message":"Technical error. The lead was not accepted."}`. This confirms V1 for TC-T and V6 for BR-A. Under option C, record V1 for TC-T and V6 for BR-A as unconfirmed. |
+| Retry-send failure | **Review only in this build** (user: "C, review only for now"; R3 to R6). Not run in `1-DEV`. Record "not tested in dev, verified by review" with the review evidence, and V1 for TC-T and V6 for BR-A as unconfirmed (F2, F3). Expected behaviour when it is later run (F2, F3): after 1 + 3 attempts on the main topic and a failed retry-topic send, BR-A branch 1 calls the facade once with the retry-send error. Then BR-A branch 2 returns 500 `{"status":"error","message":"Technical error. The lead was not accepted."}`. That run confirms V1 for TC-T and V6 for BR-A. |
 | Extensions | Under Environment Extensions for C1 in `1-DEV`, the `[Confluent_NL-HQ_Kafka]` connection fields appear (17 fields, D6). C7 and C8 have no operation overrides, and their topics are fixed in the component XML, as the CLAUDE.md "Connector extensions" exception allows. No environment-specific connection value is in any component XML. The shared `[Confluent_NL-HQ_Kafka]` component version is unchanged, and its `1-DEV` extension values are the same after testing as before. |
 | No banned shapes | No Notify shapes. Exactly three Try/Catch shapes (TC-A retry 0, TC-T retry 3, TC-F retry 0). Two Branch shapes (BR-F, BR-A), each with `numBranches="2"` and both dragpoints wired. Four Return Documents shapes. No Set Properties step for a Kafka header. |
 | Volume | About 10 sequential calls all return 202 and produce 10 messages on the main topic. |
 
 ## Open questions
 
-1. How should the technical-error and retry-send-failure paths be tested in `1-DEV`, now that the topics are fixed in C7/C8 and the shared Kafka connection must not be changed? Choose one (details under "Failure-path test approach"):
-   - (A) The Confluent administrator temporarily removes write permission for the `1-DEV` principal on `gb-cg.q.leads.in.insert` (technical-error test), then on both topics (retry-send-failure test), and restores it afterwards. This is the recommended option. If you choose it, please name who will do it.
-   - (B) A temporary Boomi test harness (a copy of the process with dummy-topic operations), run in `1-DEV` and then deleted. If you choose it, you will also be asked for the harness process name and folder.
-   - (C) Do not test these two paths in dev. They are verified by review only, and V1 for TC-T and V6 for BR-A stay unconfirmed.
+None. Revision 5 question 1 (failure-path test approach) was answered by the user: "C, review only for now" (row 16).
