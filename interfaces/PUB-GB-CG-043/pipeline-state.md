@@ -2,11 +2,11 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1.4 - Design rev 3 READY FOR APPROVAL: waiting for user approval
+- Step: 2 - Build (developer, build mode)
 - Round: 0 / 3
-- Spec approved: no
-- Spec approved on:
-- Spec hash:
+- Spec approved: yes (user: "Yes, i approve the design spec")
+- Spec approved on: 2026-10-08 (revision 3)
+- Spec hash: 1f1a888b24b66d11042d647eade405fa5d8e9ca362d9fdae83450a4ae00b0396
 
 ## Components
 
