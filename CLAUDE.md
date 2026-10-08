@@ -164,6 +164,8 @@ Before calling that facade, set the DDP `DDP_MED_NS_Msg` to the Try/Catch messag
 
 All connector settings must be externalised as environment extensions. Make connection properties (such as URLs, hosts, ports and credentials) and operation properties extensible so the process can be promoted across environments without editing the component. Do not bake environment-specific connector values into the component XML.
 
+Exception: Boomi only allows extension overrides on operations whose action is Listen. For other operations, such as a Kafka Produce, operation properties (including the Kafka topic, which is the operation's object type) cannot be made extensible and stay fixed in the operation component. The connection those operations use must still have all its settings extensible.
+
 ## Role pipeline
 
 The `/build-interface <ID>` command runs the designer, developer, reviewer and tester subagents in `.claude/agents/` for one interface. When running under it:
