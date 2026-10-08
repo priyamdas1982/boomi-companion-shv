@@ -30,3 +30,9 @@ Written only by the `/build-interface` orchestrator.
 
 | Finding | Ruling (fix / accept) | Date |
 |---------|-----------------------|------|
+
+## Test decisions (user, 2026-10-08)
+
+- TC-15 (unauthenticated call): recorded as "not run" (user: "TC-15 not run is fine").
+- Kafka topic contents: no read access will be given (user: "no Kafka read access"). Message count, body, headers and key are verified on the Boomi side only (process log and Process Reporting) and reported as "partly verified (Boomi side only)".
+- Technical-error and retry-send-failure paths: review only (spec revision 5, user: "C, review only for now").
