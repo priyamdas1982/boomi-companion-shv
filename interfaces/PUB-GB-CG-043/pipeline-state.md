@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 4 - Fix (developer, fix mode for round 1 findings F-1-01, F-1-02, F-1-03 after rev 6 approval)
+- Step: PAUSED by user (2026-10-08). Next: step 4 - developer fix mode for round 1 findings F-1-01, F-1-02, F-1-03 against approved revision 6. Fix run was stopped before any push (C1, C7, C8 still version 1). Then round 1 re-review and test execution; tests need SERVER_USERNAME and SERVER_TOKEN set in the environment.
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 6")
 - Spec approved on: 2026-10-08 (revision 6; earlier approvals superseded)
