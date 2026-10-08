@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 2 - Build (developer, build mode)
+- Step: 2 - Build BLOCKED (V4 facade has no Return Documents; folder path missing; Kafka connection choice; environment classification) - waiting for user
 - Round: 0 / 3
 - Spec approved: yes (user: "Yes, i approve the design spec")
 - Spec approved on: 2026-10-08 (revision 3)
