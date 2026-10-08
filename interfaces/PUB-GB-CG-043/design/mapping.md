@@ -1,6 +1,8 @@
 # Field mapping: PUB-GB-CG-043
 
-Revision 4. All earlier open items are resolved by the user's answers (Q10, Q11, Q12, Q13, Q9). Revision 3 change: a functional error is no longer sent to any Kafka topic (user correction: "This message do not go to retry topic."). Revision 4 change: because of the user's "branch fix", the 400 response is built on branch 2 of a Branch shape, and the facade is called on branch 1. A DDP set on branch 1 does not reach branch 2. So the 400 `message` value (R2) now comes from Meta information "Base - Try/Catch Message" (`meta.base.catcherrorsmessage`), not from `DDP_MED_NS_Msg`. The text is the same. The reused Kafka connection is now `[Confluent_NL-HQ_Kafka]`, which does not affect any field. All other field rules are unchanged.
+Revision 5. Change from revision 4: the Kafka message header `Retry-Count` is removed from this build (user: "1. b"). Messages carry no custom headers and no key. The header is follow-up F1 in the spec, for the future retry mechanism. Topics are fixed in operations C7 and C8 (user: "2. a"; CLAUDE.md: Connector extensions, Exception). This does not affect any field. All other field rules are unchanged from revision 4.
+
+Earlier history: all open items were resolved by the user's answers (Q10, Q11, Q12, Q13, Q9). Revision 3: a functional error is not sent to any Kafka topic (user correction: "This message do not go to retry topic."). Revision 4: because of the user's "branch fix", the 400 response is built on branch 2 of a Branch shape, so the 400 `message` value (R2) comes from Meta information "Base - Try/Catch Message" (`meta.base.catcherrorsmessage`), not from `DDP_MED_NS_Msg`.
 
 ## Request: Sitecore lead JSON -> Kafka message body
 
@@ -46,11 +48,11 @@ Corrected sample (test payload and profile source):
 }
 ```
 
-## Kafka message header
+## Kafka message header and key
 
 | # | Source | Target | Transformation / rule | Required | Example |
 |---|--------|--------|-----------------------|----------|---------|
-| H1 | Static value | Kafka message header `Retry-Count` | Always `0` on every message sent, on both the main and the retry topic (user Q13). Set on the valid path only, because the functional path sends nothing. It is not used by this interface yet | Y | `0` |
+| H1 | n/a | Kafka message header `Retry-Count` | **Not set in this build** (user, revision 5: "1. b"). Deferred to follow-up F1, the future retry mechanism. The original request was `Retry-Count` = `0` on every message (user Q13) | N | (none) |
 | H2 | n/a | Kafka message key | None. No key is set (user Q13 asked only for the header) | N | (none) |
 
 ## Response: WSS output -> APIM / Sitecore
