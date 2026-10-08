@@ -55,3 +55,60 @@ None.
 |---------|-------|--------|-------|---------|
 
 None.
+
+---
+
+# Attempt 2 (round 0, spec revision 4), 2026-10-08
+
+Spec hash built from: bf649b3a2e7c43a03c1ecd033378a324636eafd42790104ee6f3db444256d17c (recomputed 2026-10-08, matches pipeline-state.md; spec revision 4)
+
+Status: BLOCKED in pre-build checks. No component was created, pushed or deployed. No folder was created. No extension value was changed.
+
+## Components
+
+| Name | Type | Component ID | Version | Folder | Pulled XML |
+|------|------|--------------|---------|--------|------------|
+
+None created or changed. Read-only pulls (into active-development only, not edited, not pushed):
+
+| Name | Type | Component ID | Version | Purpose |
+|------|------|--------------|---------|---------|
+| [Confluent_NL-HQ_Kafka] | connector-settings (kafka) | c85b494e-58ab-4591-b946-76a9ec636414 | 9 | D3 |
+| [MED] SEND bu-short.q.domain-short.businessobject.amm.inout.verb | connector-action (kafka, PRODUCE) | 7bfb1b08-208f-4368-b360-51a3b4a138d0 | 2 | Produce operation template (V2 research) |
+| 47 components referencing c85b494e | process | see active-development/inventories/kafka_refs.tsv | current | Override block and header research |
+| 104 API Service components | webservice | see active-development/inventories/webservice_basepaths.tsv | current | Base path uniqueness |
+
+## Pre-build checks (2026-10-08)
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Spec hash | PASS | Recomputed hash equals the recorded hash |
+| Platform connection | PASS | Authenticated to shvenergynv-6R344K. Credentials come from the process environment (.env is empty; env-check prints no rows and exits 1 because grep finds no lines, not because of a fault) |
+| D1 Environment | PASS | `--list-environments`: 1-DEV = 693e8bc2-46f8-4c7f-8259-8dcf6cf0f264; BOOMI_ENVIRONMENT_ID equals it; user-confirmed development (spec rev 4) |
+| D2 Folder | PASS (not yet created) | Parent `.../Customer Portal/Publisher` exists; its only child is `PUB-GB-CG-043-leads` (Rjo4ODYyMjQ4). Leaf `PUB-GB-CG-043-Lead` not created because the build stopped first |
+| D3 Reused connection | PASS | 1-DEV extensions for c85b494e: username set (useDefault=false), password encrypted value set; all other fields useDefault=true, and the component's own values for bootstrap_servers, security_protocol and sasl_mechanism are non-empty. Nothing supplied or changed |
+| Runtime API tier | PASS | Atom 9beaf0cb-ca88-48e6-83a2-48cebe240f61: apiType advanced, url https://shv-energy-test.boomi.cloud |
+| Base path `gb-cg-leads/v1` uniqueness | PASS | All 104 webservice components pulled; none has urlPath `gb-cg-leads/v1` (so none can be deployed with it). Only GB-CG one: `[PUB-GB-CG-043] Leads API` bd886149 v1, base `gb-cg`, in the old `-leads` folder |
+| V2 Kafka header `Retry-Count` | FAIL (cannot determine mechanism) | No local skill reference for the kafka connector. Boomi docs unreachable from this environment (developer.boomi.com and help.boomi.com: getaddrinfo ENOTFOUND). Across all 47 components that reference c85b494e, the only Kafka document properties used are connector.kafka.message_key, topic_name, topic_partition, message_offset; no header property and no operation header field. The PRODUCE operation config (7bfb1b08) has fields client_id, acks, compression_type, operation_timeout only. Inventing a property ID would be guessing. |
+| C7/C8 operation extensions (topic) | FAIL (not supported as documented) | Skill `process_extensions.md`: "Only operations with actionType=LISTEN support extension overrides. Other actionTypes ... are rejected at write time." C7/C8 are PRODUCE operations; the topic is the operation's objectTypeId, not an operation field. No process among the 47 declares any OperationOverride (all `<Operations/>` empty). The spec (Connectors table, Test notes "Technical error" and "Retry-send failure", "Extensions") depends on a C7/C8 topic extension |
+| D4, V1, V3, V5, V6, Topic existence | NOT RUN | Need a deployed build; stopped before building |
+
+## Decisions
+
+| # | Decision | Reason |
+|---|----------|--------|
+| 1 | Stopped before creating the folder or any component | V2 and the operation-extension requirement cannot be built as written from available sources; developer must not redesign |
+| 2 | (For the next attempt) API route: overrides objectName="leads", urlPath="", httpMethod="POST" | Effective path is /<base>/<objectName>/<urlPath>; urlPath="leads" with WSS objectName "leads" would give /gb-cg-leads/v1/leads/leads, not the spec's /ws/rest/gb-cg-leads/v1/leads. To verify at test time |
+| 3 | (For the next attempt) Kafka connection extensions: reuse the platform-generated ConnectionOverride block for c85b494e as found in 45 of 46 account processes (17 fields, no xpath attributes) | process_extensions.md: emit the platform-generated block, do not hand-author |
+
+## Deviations from spec
+
+None. Nothing built.
+
+## Deployments
+
+None.
+
+## Temporary Notify shapes
+
+None.

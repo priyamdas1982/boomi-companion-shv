@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 2 - Build (developer, build mode, after rev 4 approval)
+- Step: 2 - Build attempt 2 BLOCKED (Kafka Retry-Count header mechanism unknown; produce-operation topic not extensible) - design feedback: waiting for user decisions, then designer
 - Round: 0 / 3
 - Spec approved: yes (user: "yes, I approve revision 4")
 - Spec approved on: 2026-10-08 (revision 4; rev 3 approval superseded)
