@@ -2,11 +2,11 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1.4 - Design rev 4 (design feedback loop after build BLOCKED) READY FOR APPROVAL: waiting for user re-approval
+- Step: 2 - Build (developer, build mode, after rev 4 approval)
 - Round: 0 / 3
-- Spec approved: yes (user: "Yes, i approve the design spec")
-- Spec approved on: 2026-10-08 (revision 3)
-- Spec hash: 1f1a888b24b66d11042d647eade405fa5d8e9ca362d9fdae83450a4ae00b0396
+- Spec approved: yes (user: "yes, I approve revision 4")
+- Spec approved on: 2026-10-08 (revision 4; rev 3 approval superseded)
+- Spec hash: bf649b3a2e7c43a03c1ecd033378a324636eafd42790104ee6f3db444256d17c
 
 ## Components
 
