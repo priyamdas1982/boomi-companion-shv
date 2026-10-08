@@ -2,11 +2,11 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1.4 - Design rev 5 READY FOR APPROVAL: waiting for user re-approval
+- Step: 2 - Build (developer, build mode, attempt 3, after rev 5 approval)
 - Round: 0 / 3
-- Spec approved: yes (user: "yes, I approve revision 4")
-- Spec approved on: 2026-10-08 (revision 4; rev 3 approval superseded)
-- Spec hash: bf649b3a2e7c43a03c1ecd033378a324636eafd42790104ee6f3db444256d17c
+- Spec approved: yes (user: "yes, I approve revision 5")
+- Spec approved on: 2026-10-08 (revision 5; earlier approvals superseded)
+- Spec hash: e163319eb14898d5f28a5ceedd3a3f991c5b7ba579f0af7674067352d1138899
 
 ## Components
 
