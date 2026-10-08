@@ -1,6 +1,8 @@
 # Field mapping: PUB-GB-CG-043
 
-Revision 5. Change from revision 4: the Kafka message header `Retry-Count` is removed from this build (user: "1. b"). Messages carry no custom headers and no key. The header is follow-up F1 in the spec, for the future retry mechanism. Topics are fixed in operations C7 and C8 (user: "2. a"; CLAUDE.md: Connector extensions, Exception). This does not affect any field. All other field rules are unchanged from revision 4.
+Revision 6. Change from revision 5 (review finding F-1-02, wording only): row 4 now names the tracked-field slots that carry the user's tracking field `email` on C3, C7 and C8: `primarykey` = static `Email` and `primaryvalue` = request element `email`. No field rule changes. The C7/C8 producer settings changed in revision 6 (`acks` = `all`, `operation_timeout` = `5000`) do not affect any field.
+
+Revision 5 change from revision 4: the Kafka message header `Retry-Count` is removed from this build (user: "1. b"). Messages carry no custom headers and no key. The header is follow-up F1 in the spec, for the future retry mechanism. Topics are fixed in operations C7 and C8 (user: "2. a"; CLAUDE.md: Connector extensions, Exception). This does not affect any field. All other field rules are unchanged from revision 4.
 
 Earlier history: all open items were resolved by the user's answers (Q10, Q11, Q12, Q13, Q9). Revision 3: a functional error is not sent to any Kafka topic (user correction: "This message do not go to retry topic."). Revision 4: because of the user's "branch fix", the 400 response is built on branch 2 of a Branch shape, so the 400 `message` value (R2) comes from Meta information "Base - Try/Catch Message" (`meta.base.catcherrorsmessage`), not from `DDP_MED_NS_Msg`.
 
@@ -23,7 +25,7 @@ The only check is that the body is present and is a JSON object (script S1 in th
 | 1 | `first-name` (root/first-name) | `first-name` (root/first-name) | Pass-through, unchanged | N | `Test` |
 | 2 | `last-name` (root/last-name) | `last-name` (root/last-name) | Pass-through, unchanged | N | `LeadAPITesting1` |
 | 3 | `phone` (root/phone) | `phone` (root/phone) | Pass-through, unchanged (string, leading zero kept) | N | `07989480687` |
-| 4 | `email` (root/email) | `email` (root/email) | Pass-through, unchanged. Tracking field on C3, C7 and C8 (user Q7). Not used as a Kafka key (no key) | N | `testleadapitesting1@calor.co.uk` |
+| 4 | `email` (root/email) | `email` (root/email) | Pass-through, unchanged. Tracking field (user Q7) on C3, C7 and C8, through tracked-field slots `primarykey` = static `Email` and `primaryvalue` = this element (spec row 9). Not used as a Kafka key (no key) | N | `testleadapitesting1@calor.co.uk` |
 | 5 | `postcode` (root/postcode) | `postcode` (root/postcode) | Pass-through, unchanged | N | `GL3 1DL` |
 | 6 | `address-line-one` (root/address-line-one) | `address-line-one` (root/address-line-one) | Pass-through, unchanged | N | `Ref County Durham Dowco Hous` |
 | 7 | `additional-comments` (root/additional-comments) | `additional-comments` (root/additional-comments) | Pass-through, unchanged | N | `Testing Lead, please ignore` |
