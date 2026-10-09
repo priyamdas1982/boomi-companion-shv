@@ -2,11 +2,11 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1.4 - spec revision 7 READY FOR APPROVAL (2026-10-09), waiting for the user's approval. C1, C7, C8 at v2 in 1-DEV (package 7d8121d2-647f-493d-a192-8d01219cd7c7).
+- Step: 4 - developer fix mode against approved revision 7 (round 1). Next: re-review (reviewer) and test execution (tester) in 1-DEV.
 - Round: 1 / 3
-- Spec approved: yes (user: "yes, I approve revision 6")
-- Spec approved on: 2026-10-08 (revision 6; earlier approvals superseded)
-- Spec hash: 9bcb1e480fb9e77fa301ce599a14df9f3cfedf46dca32e0a67fe7c5d90a4cf5a
+- Spec approved: yes (user: "yes, I approve revision 7")
+- Spec approved on: 2026-10-09 (revision 7; earlier approvals superseded)
+- Spec hash: 8a32401414260fab4c811eeb3093d9cb5789aa2948caa93135861a919a8f0d49
 - Kafka topics confirmed: `gb-cg.q.leads.in.insert` and `gb-cg.q.leads.in.retry` (user, 2026-10-09: "I have just created gb-cg.q.leads.in.retry and gb-cg.q.leads.in.insert in confluent")
 
 ## Components
