@@ -52,3 +52,4 @@ Q1 follow-up: "kafka failure is rarity."
 Then: "redesign, also change in design rules: if kafka fails, try 3 times. throw exception. return exception to api consumer.  handled or unhandled."
 Added to CLAUDE.md as the standing rule "Kafka send failures". Relayed to the designer for revision 7.
 Further answers (2026-10-09, verbatim): "2. keep existing logic of 3 retries. 3. i don't know, find a way that my api path is /leads. if it is already taken up, make v2. 4. a" (2 = TC-T retry count, 3 = /leads/leads route, 4 = DDP_MED_NS_Level leave unset). Relayed to the designer. Questions 5 to 10 still open.
+Answers to revision 7 second-pass questions (2026-10-09, verbatim): "1a 2a 3-8: a" (Q1 a: 3 attempts in total, 1 send + 2 retries, Kafka timeout 3 s; Q2 a: return the full exception text; Q3-Q8 a: leave DDP_MED_NS_Code, DPP_MED_Environment, DPP_MED_Environment_Class, DPP_MED_APIURL, DPP_MED_TrackingId, DPP_MED_TrackedFields unset). Relayed to the designer.
