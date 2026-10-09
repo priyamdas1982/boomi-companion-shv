@@ -387,3 +387,66 @@ Spec hash recomputed: 8a32401414260fab4c811eeb3093d9cb5789aa2948caa93135861a919a
 ## Blocking item
 
 The run needs the Boomi documentation hosts: the orchestrator requires V7 (Process Call abort = false lets branch 2 run after a facade failure) to be verified against Boomi documentation before relying on it, and D5 step 1 requires a documentation search for an exact API Service route. Both `help.boomi.com` and `developer.boomi.com` are unreachable from this session, so D0 fails and, per CLAUDE.md "Connectivity checks first", nothing was changed. Remedy: allow `help.boomi.com` and `developer.boomi.com` through the session's network policy, or have the user paste the relevant Boomi documentation (Process Call shape "Abort if process fails"; API Service REST route / URL path matching), then re-run the developer.
+
+---
+
+# Attempt 6 / revision 7 (round 1 fix, re-run, 2026-10-09)
+
+Status: **BLOCKED: V7 not confirmed by Boomi documentation** (spec V7: "Before building, confirm the abort = false behaviour from Boomi documentation ... If the documentation says abort = false does not let branch 2 run, stop and return to the orchestrator; do not add a Try/Catch"). Nothing was created, changed, pushed or deployed. C1 135044a4 v2 (package 7d8121d2-647f-493d-a192-8d01219cd7c7), C2 4c878feb v1 (package d2229e66), C3 0f214069 v1, C7 583b0437 v2 and C8 be398af2 v2 are unchanged. `build/components/` was not refreshed, because no component changed.
+
+## D0 connectivity checks (all passed)
+
+| Check | Result |
+|-------|--------|
+| `boomi-env-check.sh` | Not usable here: the project `.env` is empty and the variables come from the process environment. As agreed by the orchestrator, the by-name check below is the env check result |
+| Platform variables (by name) | BOOMI_API_URL, BOOMI_USERNAME, BOOMI_API_TOKEN, BOOMI_ACCOUNT_ID, BOOMI_ENVIRONMENT_ID, BOOMI_TEST_ATOM_ID, BOOMI_VERIFY_SSL, BOOMI_TARGET_FOLDER: SET |
+| `boomi-folder-create.sh --test-connection` | Passed (account shvenergynv-6R344K) |
+| Runtime endpoint credentials | SERVER_USERNAME SET, SERVER_TOKEN SET, SERVER_BEARER_TOKEN EMPTY, SERVER_AUTH_TYPE SET (SERVER_BASE_URL SET) |
+| `platform.boomi.com` | HTTP 200 |
+| `api.boomi.com` | HTTP 200 |
+| `shv-energy-test.boomi.cloud` (1-DEV runtime) | Reachable (HTTP 404 at `/`) |
+| `help.boomi.com` | HTTP 200 (curl through the proxy; WebFetch still cannot resolve the host, so curl was used) |
+| `developer.boomi.com` | HTTP 200 (`/llms.txt`) |
+
+Spec hash recomputed twice: 8a32401414260fab4c811eeb3093d9cb5789aa2948caa93135861a919a8f0d49 (matches). Kafka topic gate: `gb-cg.q.leads.in.insert` is recorded in pipeline-state.md "Kafka topics confirmed" (passed).
+
+## V7 documentation check (failed: not confirmed)
+
+Sources read (2026-10-09):
+
+1. help.boomi.com, "Process Call step" (updated 21 April 2026): https://help.boomi.com/docs/Atomsphere/Integration/Process%20building/r-atm-Process_Call_shape_cc0f1835-4d30-499f-8fd2-95d3c0997c85
+   - "Wait for the process to complete. If selected, the parent process waits for the subprocess to complete before continuing to its next step. **If the subprocess fails, the parent process stops.** If cleared, and if Abort if process fails is selected, the parent process reports the subprocess' error after all subprocesses have executed."
+   - "Abort if subprocess fails. If selected, the parent process stops and is marked as failed if the subprocess fails."
+2. help.boomi.com, "Process Route step": https://help.boomi.com/docs/Atomsphere/Integration/Process%20building/r-atm-Process_Route_shape_5ee00436-fb63-43c1-8fcb-48f8c8829115. It has the same wording for "Wait" ("If the subprocess fails, the parent process stops") and "Abort".
+3. help.boomi.com, "Branch step": https://help.boomi.com/docs/Atomsphere/Integration/Process%20building/r-atm-Branch_shape_83d94692-c1c3-4ad6-a6e6-50ee0e48c495. It says only that "A branch's path is executed to completion before executing the next branch" and says nothing about a failed branch.
+4. Skill `process_call_step.md`: `abort` = "Whether parent process aborts if subprocess fails" (no behaviour for false).
+
+Finding: the spec uses wait = true. For that setting the documentation says "If the subprocess fails, the parent process stops." The sentence does not depend on the Abort option. No source says that clearing Abort lets the parent continue: the document going on to BR-F or BR-A branch 2 after a facade failure. The documentation therefore does not confirm V7, and on its plain reading it says the opposite (with wait = true the parent stops). Clearing Abort is documented only as not marking the parent as failed. The spec forbids forcing a facade failure to test it (V7, F3) and forbids adding a Try/Catch. So rows 23, 27 and 28 and the "Facade fails" row of the error table cannot be shown to work as designed. Stopped before building, per V7.
+
+Options for the designer and user (not decided by the developer): keep abort = false and accept V7 as unconfirmed (runtime confirmation later under F3); keep abort = false and approve a controlled facade-failure test in 1-DEV; or change the design so the error response does not depend on the facade outcome.
+
+## D5 evidence gathered (read only; nothing changed or deployed)
+
+- Documentation: help.boomi.com, "Adding a REST endpoint to an API service component" (updated 22 July 2026): https://help.boomi.com/docs/Atomsphere/API%20Management/Topics/t-atm-Adding_a_REST_endpoint_to_an_API_component_ab757f9c-ebf1-4ee2-97d4-8016460378bb. "The Match the exact endpoint checkbox controls how the system routes incoming API requests. The endpoint responds only to precisely defined requests ... the system requires static path components to match exactly ... The system honors exact match configurations only if you deploy the corresponding process ... When you uncheck the checkbox, the system applies the Best Match principle, finding the most specific or closest matching pattern among deployed endpoints." Full URL form: `http://Host:port/REST_url_path/Object/Path_Parameters`.
+- Account precedent (pulled read only, 105 API Service components): the route `overrides` element takes the attribute `exactMatch`. It is `exactMatch="true"` in `[CustomerPortals]-[NL-HQ] BUSINESS v1 (QA)` (fd4b3297, v1) and `(stage)` (57c70a99, v1), and `exactMatch="false"` in `(PROD)` (2cdd7641). C2 has no `exactMatch` attribute, so best match applies today, which explains why `/leads/leads` reaches C1 (bcec584b).
+- Candidate for D5 (not verified at runtime, because the run stopped at V7): C2 route `overrides` with `objectName="leads"`, `urlPath=""`, `httpMethod="POST"` and **`exactMatch="true"`**, under base path `gb-cg-leads/v1`. It must still pass D5 step 2 in 1-DEV.
+- Base-path uniqueness (rechecked over all 105 API Services): `gb-cg-leads/v1` is used only by C2 (4c878feb); `gb-cg-leads/v2` is used by none; `[PUB-GB-CG-043] Leads API` (bd886149) uses `gb-cg`.
+
+## Developer checks (Attempt 6)
+
+| Check | Result |
+|-------|--------|
+| D0 | Passed |
+| D1 | Passed (unchanged; 1-DEV only, no deployment made) |
+| D2 to D4, D6 to D8 | Not run (stopped at V7, before building) |
+| D5 | Evidence gathered only (above); not verified at runtime |
+| V1, V3, V5, V6, V8 | Not run |
+| V7 | **Failed: not confirmed by documentation** (above) |
+
+## Deployments
+
+None in this attempt.
+
+## Temporary Notify shapes
+
+None added. C1 v2 is unchanged and has 0 Notify shapes.

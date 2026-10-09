@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 4 - developer fix (revision 7) returned BLOCKED: connectivity (2026-10-09). help.boomi.com and developer.boomi.com refused by the network policy; needed for V7 and D5. No changes made; components unchanged (C1 v2, C2 v1, C3 v1, C7 v2, C8 v2). Waiting on the user.
+- Step: 4 - developer fix (revision 7, attempt 6) returned BLOCKED: V7 not confirmed by Boomi documentation (Process Call with wait=true stops the parent when the subprocess fails, whatever Abort is). Connectivity D0 all passed. D5 evidence: exactMatch="true" route option found. No changes made. Design feedback: waiting on user decision.
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 7")
 - Spec approved on: 2026-10-09 (revision 7; earlier approvals superseded)

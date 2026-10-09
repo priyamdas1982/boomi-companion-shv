@@ -13,3 +13,7 @@ Built against spec revision 6 (hash 9bcb1e480fb9e77fa301ce599a14df9f3cfedf46dca3
 ## Round 1, revision 7
 
 Status: BLOCKED: connectivity (D0). No revision 7 change was implemented in this run; no component was changed, pushed or deployed. See build-log.md, "Attempt 5 / revision 7". The revision 7 changes (rows 18, 21, 22, 26, 27, 28; Exception "Kafka send failed"; removal of the C8 step; S2; D5 route) are still to be made once the Boomi documentation hosts are reachable.
+
+### Re-run (Attempt 6, 2026-10-09)
+
+Status: BLOCKED: V7 not confirmed by Boomi documentation. D0 passed on all hosts. No component was changed, pushed or deployed, and none of the revision 7 changes is implemented yet. help.boomi.com "Process Call step" says: "Wait for the process to complete. If selected, ... If the subprocess fails, the parent process stops." No source says abort = false lets branch 2 run; see build-log.md "Attempt 6 / revision 7". D5 evidence was gathered for the next round: route attribute `exactMatch="true"` ("Match the exact endpoint"), documented and used by account API Services fd4b3297 and 57c70a99; `gb-cg-leads/v1` is used only by C2 and `gb-cg-leads/v2` is free.
