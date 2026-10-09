@@ -1,5 +1,7 @@
 # Field mapping: PUB-GB-CG-043
 
+Revision 7, third pass (2026-10-09, user: "1a 2a 3-8: a"). No `OPEN` rows remain. The 500 `message` carries the full exception text as is (user "2a"); for a Kafka failure it reads `... failed after 3 attempts: ...` (3 attempts, user "1a"). FI-10 to FI-15 are not set (user "3-8: a"). No field rule for the request or the Kafka message changes.
+
 Revision 7, second pass (2026-10-09). Changes: the Kafka message goes only to `gb-cg.q.leads.in.insert`; nothing is sent to `gb-cg.q.leads.in.retry` any more (user: "if kafka fails, try 3 times. throw exception. return exception to api consumer.  handled or unhandled."; CLAUDE.md "Kafka send failures"). The 500 response `message` now carries the exception text instead of a fixed text, built by script S2 with JSON escaping (R2; data exposure is spec open question 2). FI-9 `DDP_MED_NS_Level` is closed as "leave unset" (user: "4. a"). FI-10 to FI-15 are still `OPEN`, now spec questions 3 to 8. The request pass-through rows and the header/key rows are unchanged.
 
 Revision 7 (2026-10-09). Changes from revision 6: a new section "Facade inputs" lists the properties C1 sets before each call to `[MED] (sub) CACHE Notification Facade` (user: "set whatever needs to be set and available to you"; evidence: build log "Attempt 4 / Round 1 fix", "Log analysis", execution 22c61363). Rows FI-9 to FI-15 are `OPEN` (spec open questions 4 to 10). Response row R1 now notes that a Kafka outage returns 500 (user: "kafka outage should give an error back"). The request pass-through rows, the header/key rows and the response bodies are unchanged.
@@ -68,7 +70,7 @@ Response profile: `PUB-GB-CG-043 Lead Response JSON` (C6). Built by Message step
 | # | Source | Target field / path | Transformation / rule | Required | Example |
 |---|--------|---------------------|-----------------------|----------|---------|
 | R1 | Static per outcome | `status` (root/status) | `accepted` (202, only when the send to the main topic succeeded), `rejected` (400) or `error` (500). Revision 7 second pass: a Kafka send that fails on every attempt, and any other error caught by TC-A, returns `error` (500); never `accepted` for a failed send (CLAUDE.md "Kafka send failures") | Y | `accepted` |
-| R2 | 202: omitted. 400: Meta information "Base - Try/Catch Message" (`meta.base.catcherrorsmessage`), read on BR-F branch 2. It holds the functional error text from script S1 via the Exception step, the same text that BR-F branch 1 puts in `DDP_MED_NS_Msg`. 500: Meta information "Base - Try/Catch Message" read on BR-A branch 2 into DDP `DDP_ERROR_MESSAGE` by "Response 500", then written by S2 | `message` (root/message) | Omitted on 202 (body is exactly `{"status":"accepted"}`, user Q9). 400 and 500 must not read `DDP_MED_NS_Msg`, because that DDP is set on branch 1 and does not reach branch 2 (revision 4). 500: the exception text as is (user: "return exception to api consumer"), JSON-escaped by S2 (`JsonOutput`); for a Kafka failure it is `Kafka send to gb-cg.q.leads.in.insert failed after <1 + N> attempts: <Kafka connector error>`. Data exposure of the raw text: spec open question 2 | N | 400: `Functional error: request body is not valid JSON`; 500: `Kafka send to gb-cg.q.leads.in.insert failed after 3 attempts: <Kafka error>` |
+| R2 | 202: omitted. 400: Meta information "Base - Try/Catch Message" (`meta.base.catcherrorsmessage`), read on BR-F branch 2. It holds the functional error text from script S1 via the Exception step, the same text that BR-F branch 1 puts in `DDP_MED_NS_Msg`. 500: Meta information "Base - Try/Catch Message" read on BR-A branch 2 into DDP `DDP_ERROR_MESSAGE` by "Response 500", then written by S2 | `message` (root/message) | Omitted on 202 (body is exactly `{"status":"accepted"}`, user Q9). 400 and 500 must not read `DDP_MED_NS_Msg`, because that DDP is set on branch 1 and does not reach branch 2 (revision 4). 500: the exception text as is (user: "return exception to api consumer"), JSON-escaped by S2 (`JsonOutput`); for a Kafka failure it is `Kafka send to gb-cg.q.leads.in.insert failed after 3 attempts: <Kafka connector error>`. The full text is returned as is (user: "2a") | N | 400: `Functional error: request body is not valid JSON`; 500: `Kafka send to gb-cg.q.leads.in.insert failed after 3 attempts: <Kafka error>` |
 
 ## Facade inputs: C1 -> `[MED] (sub) CACHE Notification Facade` (revision 7)
 
@@ -85,9 +87,9 @@ Set in the Set Properties step "Set facade inputs" on BR-F branch 1 (functional 
 | FI-7 | Execution property `Atom Name` | DPP `DPP_MED_AtomName` | Copied as is | N | `MCS_NL-HM_DEV_1` |
 | FI-8 | Execution property `Atom Id` | DPP `DPP_MED_ContainerId` | Copied as is ("container" = Boomi runtime; spec FI-8) | N | same as FI-6 |
 | FI-9 | none | DDP `DDP_MED_NS_Level` | **Not set** on either branch (user: "4. a", leave unset) | N | (not set) |
-| FI-10 | OPEN (spec Q3) | DDP `DDP_MED_NS_Code` | OPEN; may differ between BR-F and BR-A | OPEN | OPEN |
-| FI-11 | OPEN (spec Q4) | DPP `DPP_MED_Environment` | OPEN | OPEN | OPEN |
-| FI-12 | OPEN (spec Q5) | DPP `DPP_MED_Environment_Class` | OPEN | OPEN | OPEN |
-| FI-13 | OPEN (spec Q6) | DPP `DPP_MED_APIURL` | OPEN | OPEN | OPEN |
-| FI-14 | OPEN (spec Q7) | DPP `DPP_MED_TrackingId` | OPEN | OPEN | OPEN |
-| FI-15 | OPEN (spec Q8) | DPP `DPP_MED_TrackedFields` | OPEN | OPEN | OPEN |
+| FI-10 | none | DDP `DDP_MED_NS_Code` | **Not set** on either branch (user: "3-8: a") | N | (not set) |
+| FI-11 | none | DPP `DPP_MED_Environment` | **Not set** (user: "3-8: a") | N | (not set) |
+| FI-12 | none | DPP `DPP_MED_Environment_Class` | **Not set** (user: "3-8: a") | N | (not set) |
+| FI-13 | none | DPP `DPP_MED_APIURL` | **Not set** (user: "3-8: a") | N | (not set) |
+| FI-14 | none | DPP `DPP_MED_TrackingId` | **Not set** (user: "3-8: a") | N | (not set) |
+| FI-15 | none | DPP `DPP_MED_TrackedFields` | **Not set** (user: "3-8: a") | N | (not set) |
