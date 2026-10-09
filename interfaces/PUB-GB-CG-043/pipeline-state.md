@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 4 - developer fix mode returned BLOCKED (2026-10-09). F-1-01 and F-1-03 FIXED (C1, C7, C8 now v2, C1 redeployed to 1-DEV, package 7d8121d2-647f-493d-a192-8d01219cd7c7); F-1-02 NO CHANGE (wording only, build already matches row 9). Developer checks failed: D4 (facade: "Could not determine value for Index key: DDP_MED_ProcessId"), D5 (/leads/leads also reaches C1), happy path (execution timed out at about 33 s, no response, log not downloadable). Waiting on user decisions under the design feedback loop. Credentials: SERVER_USERNAME, SERVER_TOKEN SET; SERVER_AUTH_TYPE basic.
+- Step: 4 - developer fix mode returned BLOCKED (2026-10-09). F-1-01 and F-1-03 FIXED (C1, C7, C8 now v2, C1 redeployed to 1-DEV, package 7d8121d2-647f-493d-a192-8d01219cd7c7); F-1-02 NO CHANGE (wording only, build already matches row 9). Developer checks failed: D4 (facade: "Could not determine value for Index key: DDP_MED_ProcessId"), D5 (/leads/leads also reaches C1), happy path (execution timed out at about 33 s, no response, log not downloadable). Waiting on user decisions under the design feedback loop. Credentials: SERVER_USERNAME, SERVER_TOKEN SET; SERVER_AUTH_TYPE basic. Log analysis 2026-10-09 (platform.boomi.com allowed by user): happy path C7 failed 4 x at the 5 s operation_timeout with no Kafka error text, runtime cut the execution at about 33 s before TC-T catch, C8 never ran (nothing sent to retry topic); facade route fails because C1 does not set DPP_MED_ProcessId and other DPP_MED_*/DDP_MED_NS_* inputs. Waiting on user answers.
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 6")
 - Spec approved on: 2026-10-08 (revision 6; earlier approvals superseded)

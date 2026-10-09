@@ -266,6 +266,70 @@ Executions (all in 1-DEV, atom 9beaf0cb MCS_NL-HM_DEV_1):
 | execution-22c61363-80dd-4f5e-aaa5-5fb369afbd7d-2026.10.09 | POST /ws/rest/gb-cg-leads/v1/leads, TC-10 malformed JSON | ERROR, "Error indexing document. Could not determine value for Index key: DDP_MED_ProcessId", 0.9 s, client HTTP 500 (runtime default page) |
 | execution-bcec584b-4848-4856-b7ac-d4ea1b89c0d7-2026.10.09 | POST /ws/rest/gb-cg-leads/v1/leads/leads, TC-03 (wrong path) | Reached C1 (D5 fail). ERROR, "Process exceeded maximum execution time limit", 30.1 s, client HTTP 000 |
 
+## Log analysis (2026-10-09, coordinator follow-up)
+
+The process logs for the three executions were downloaded read only with `boomi-execution-query.sh --execution-id <ID> --logs` once platform.boomi.com was allowed. No new execution was run. Nothing was edited, pushed or deployed, and no extension value was changed. No credential value appears in the extracts below. Raw logs (local only, not part of the build): `active-development/feedback/execution-results/logs_20261009_1319*_<execution-id>.json`. Read-only reference pulls made for this analysis: Process Route `[MED] Process Service` 76eb8a3a-3b83-4ecc-80db-6b01446a65b2, route target `[MED] (sub) CACHE Notification` 47e2da88-c030-4cfe-b3b4-8c8e89ed7841 (v2), map `[MED] CREATE Notification` 911b9276-126e-4e80-9b44-306b9dae1a97.
+
+### execution-93e06b38 (happy path, TC-01) and execution-bcec584b (wrong path, TC-03)
+
+The two logs show the same sequence. Times are for 93e06b38, with bcec584b in brackets.
+
+| Time | Shape | Result |
+|------|-------|--------|
+| 13:07:22 (13:09:21) | Start (C3) -> TC-A -> Check JSON body -> Body is valid JSON? (True) -> TC-T | OK |
+| 13:07:22 -> 13:07:27 | Produce gb-cg.q.leads.in.insert (C7), first attempt | "Shape executed with errors in 5165 ms" (5060 ms); "No documents found. Skipping execution for the Response 202 step." |
+| 13:07:27 -> 13:07:32 | TC-T retry 1: C7 | errors in 5052 ms (5048 ms) |
+| 13:07:43 -> 13:07:48 | TC-T retry 2 (started 11 s after retry 1 ended; 13 s in bcec584b): C7 | errors in 5051 ms (5042 ms) |
+| 13:07:55 (13:09:51) | TC-T retry 3 starts (7 s after retry 2; 1 s in bcec584b) | SEVERE "Unexpected error executing process: java.util.concurrent.CancellationException: Process exceeded maximum execution time limit" before any shape ran |
+| 13:07:55 (13:09:51) | TC-A | "Try/Catch Shape sending 1 document(s) down error path", then the same CancellationException. No BR-A shape, Set Properties or facade line follows |
+
+- **C7 error text:** the process log does not contain it. Every C7 attempt is logged only as "Shape executed with errors in ~5050 ms", with no exception message or stack trace for the connector. The only exception in either log is the runtime's CancellationException. The document-level error text is not exposed by the CLI tools.
+- **C8 (retry topic):** **did not run** in either execution. There is no log line for "Produce gb-cg.q.leads.in.retry", "Response 202 (parked)" or the TC-T catch path, because the runtime cancelled the execution at the start of retry 3, before TC-T reached its catch path. **No message can have been sent to `gb-cg.q.leads.in.retry`** by these runs. The facade did not run either.
+- **TC-T retry timing (new evidence):** retries are **not immediate** on this runtime. The gaps between attempts were 0 s, 11 s and 7 s (93e06b38) and 0 s, 13 s and 1 s (bcec584b). The spec's assumption ("Retries in TC-T run immediately, with no back-off", Error handling and "Kafka producer settings") does not hold here. The cause of the gaps is not shown in the log.
+- **Runtime execution limit (new evidence):** the listener execution was cancelled at 30-33 s. With 4 attempts of about 5 s plus the observed retry gaps, TC-T never reaches its catch path within that limit. So on this runtime the designed technical-error path (C8 park, 202) and the retry-send-failure path (BR-A, 500) cannot complete when the main topic is failing. This is relevant to spec rows 16 and 19 and follow-ups F2 and F3, and is for the designer.
+
+**Cause of the C7 failure (evidence-based conclusion):**
+
+- Proven by the log: each C7 attempt failed after 5042-5165 ms, which is `operation_timeout` (5000 ms) plus a small overhead. So the send is bounded by `operation_timeout` and ends as a timeout-length failure, not a fast rejection. This partly answers D7: at least in this failure mode, the whole attempt (whatever the producer was waiting for) stopped at about 5 s.
+- Not proven (unconfirmed): what the producer was waiting for. A fast authentication rejection or an invalid-configuration error (for example the connector refusing `acks=all`) would usually fail in well under 5 s, so these are less likely, but the log does not exclude them. The pattern fits a wait that never completes: the topic `gb-cg.q.leads.in.insert` missing (with auto-creation off), the broker or cluster not reachable from the 1-DEV runtime with the bound connection values, or `acks=all` waiting for in-sync replicas that are not available. None of these is confirmed. Topic existence is still unconfirmed.
+- Suggested next evidence (for the orchestrator, not done): the Kafka error text from Process Reporting (document detail of the C7 step) in the Boomi GUI; or the Confluent administrator confirming that the topic exists and the 1-DEV principal can write to it; or a run with `acks` `1` to isolate `acks=all` (needs a spec change).
+
+### execution-22c61363 (malformed JSON, TC-10)
+
+Shapes in order (all at 13:09:09-13:09:10):
+
+1. C1: Start -> TC-A -> Check JSON body -> Body is valid JSON? (False) -> TC-F -> Exception "Functional error" ("Shape executed with errors in 25 ms") -> TC-F "sending 1 document(s) down error path" -> BR-F -> branch 1: Set DDP_MED_NS_Msg -> Process Call `[MED] (sub) CACHE Notification Facade`.
+2. Facade 338df4f8 -> Process Route "Executing process '[MED] (sub) CACHE Notification' with 1 document(s) for route key 'CACHE_NOTIFICATION'".
+3. Route target 47e2da88: Start (Passthrough) -> Document not in Notification Cache? -> Branch -> Empty Document -> Get DPP_MED_ProcessCallStack (logs "DPP_MED_ProcessCallStack: [Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG] (Continuation f_0)") -> Stop (continue) -> Remove additional whitespace & hash document - DDP_MED_NS_MSG_HASH -> remove XML tags from DDP_MED_NS_Msg -> encryp for NL-HMt (PGP Encrypt) -> Set Properties "DDP_MED_NS_DOC, DDP_ALL, DDP_MED_ProcessId" -> Map `[MED] CREATE Notification` -> Branch -> DDP_MED_NS_MSG_HASH not in cache? -> **Document Cache Load: "Shape executed with errors in 36 ms"**.
+4. Back in C1: "BR-F Notify then reject: No documents found. Skipping execution for the Response 400 step." -> TC-A "sending 1 document(s) down error path" -> BR-A -> branch 1: Set DDP_MED_NS_Msg -> facade -> same route target path -> Document Cache Load fails again -> "BR-A Notify then error: No documents found. Skipping execution for the Response 500 step."
+5. Final: SEVERE "First document failure: Error indexing document.  Could not determine value for Index key: DDP_MED_ProcessId". The HTTP 500 is the runtime default, not C1's BR-A response.
+
+- **Exact error:** `Error indexing document.  Could not determine value for Index key: DDP_MED_ProcessId` (Document Cache Load in route target 47e2da88, document cache 5561b6a6-8ba0-4bb5-a30f-3239c1c39f60).
+- **Root cause (proven from the XML and log):** the route target's Set Properties step "DDP_MED_NS_DOC, DDP_ALL, DDP_MED_ProcessId" sets `DDP_MED_ProcessId` from the process property **`DPP_MED_ProcessId`** (`processpropertydefaultvalue=""`). C1 never sets `DPP_MED_ProcessId`, so the DDP is empty and the document cache cannot index it. The Process Route target is deployed and runs in 1-DEV (the D4 route-target concern does not apply). The failure is a missing caller input.
+- **Kafka:** no Kafka shape ran (correct for the functional path). C8 did not run.
+- **V5 partial evidence:** the Exception step ran and TC-F caught it. The 400 body was never built, so V5 and V6 stay unconfirmed.
+
+Inputs the facade / route path reads that C1 does not set (facade 338df4f8 description "Input:" list, the route target 47e2da88 XML and map 911b9276 PropertyGet functions):
+
+| Property | Kind | Read by | Effect when empty |
+|----------|------|---------|-------------------|
+| `DPP_MED_ProcessId` | DPP | Route target Set Properties -> `DDP_MED_ProcessId` (document cache index key); map PropertyGet | **Fatal**: Document Cache Load fails (this error) |
+| `DDP_MED_NS_Level` | DDP | Facade input list; map 911b9276 | Not fatal in this run (the error came later); notification field empty |
+| `DDP_MED_NS_Code` | DDP | Facade input list; map 911b9276 | Not fatal in this run; notification field empty |
+| `DPP_MED_AccountId` | DPP | Facade input list; map PropertyGet | Not fatal in this run; empty or map default |
+| `DPP_MED_APIURL` | DPP | Facade input list; map PropertyGet | as above |
+| `DPP_MED_AtomId` | DPP | Facade input list; map PropertyGet | as above |
+| `DPP_MED_AtomName` | DPP | Map PropertyGet (not in the facade input list) | as above |
+| `DPP_MED_ContainerId` | DPP | Facade input list; map PropertyGet | as above |
+| `DPP_MED_Environment` | DPP | Facade input list; map PropertyGet | as above |
+| `DPP_MED_Environment_Class` | DPP | Facade input list; map PropertyGet | as above |
+| `DPP_MED_ExecutionId` | DPP | Facade input list; map PropertyGet (map default "unknownExecu...") | as above |
+| `DPP_MED_ProcessName` | DPP | Facade input list; map PropertyGet | as above |
+| `DPP_MED_TrackingId` | DPP | Facade input list; map PropertyGet | as above |
+| `DPP_MED_TrackedFields` | DPP | Facade input list; map PropertyGet | as above |
+
+C1 sets only `DDP_MED_NS_Msg` (as the spec requires). `DDP_MED_NS_DOC`, `DDP_ALL`, `DDP_MED_ProcessId`, `DDP_MED_NS_MSG_HASH` and `DPP_MED_ProcessCallStack` / `DPP_ProcessCallStack` are set inside the route target itself. Which values C1 should supply for the 13 missing inputs, and how other SHV framework processes normally set them, is a design question; no value has been invented.
+
 ## Decisions
 
 | # | Decision | Reason |
@@ -294,6 +358,6 @@ None added. Final C1 v2 has 0 Notify shapes.
 
 ## Blocking items
 
-1. **D4 facade fails in 1-DEV** (spec D4: "If it fails ... stop and return to the orchestrator. Do not deploy or edit shared framework components"). The facade's Process Route target fails on the cache index key `DDP_MED_ProcessId`, which the spec does not tell C1 to set. The designer needs to decide which DDPs (for example `DDP_MED_ProcessId`, and possibly `DDP_MED_NS_Code` / `DDP_MED_NS_Level`, which the facade reads) C1 must set before the facade call, and their values, or whether the 1-DEV framework deployment is at fault. Evidence: execution 22c61363.
+1. **D4 facade fails in 1-DEV** (spec D4: "If it fails ... stop and return to the orchestrator. Do not deploy or edit shared framework components"). The facade's Process Route target fails on the cache index key `DDP_MED_ProcessId`, which the spec does not tell C1 to set. The designer needs to decide which DDPs (for example `DDP_MED_ProcessId`, and possibly `DDP_MED_NS_Code` / `DDP_MED_NS_Level`, which the facade reads) C1 must set before the facade call, and their values, or whether the 1-DEV framework deployment is at fault. Evidence: execution 22c61363. **Updated by the log analysis:** the route target is deployed and runs; the fatal missing input is the process property `DPP_MED_ProcessId`, and 12 further facade inputs are unset (see "Log analysis").
 2. **D5 wrong path reaches C1** (spec D5: "If the effective path differs, stop and return to the orchestrator"). `/ws/rest/gb-cg-leads/v1/leads/leads` started C1 (execution bcec584b), so the API Service route also matches a trailing extra segment.
-3. **Happy path does not complete and main-topic existence is unconfirmed** (spec "Topic existence": "If not, stop and return to the orchestrator"). Execution 93e06b38 exceeded the runtime's maximum execution time (about 30 s) with no response. The C7 error is not visible because the log download fails (curl exit 56). Also relevant to spec row 19: the runtime ended a listener execution at about 30-33 s, so the accepted worst case of "about 25 s plus the facade" is close to this runtime limit.
+3. **Happy path does not complete and main-topic existence is unconfirmed** (spec "Topic existence": "If not, stop and return to the orchestrator"). Execution 93e06b38 exceeded the runtime's maximum execution time (about 30 s) with no response. The C7 error is not visible because the log download fails (curl exit 56). **Updated by the log analysis:** logs now downloaded. C7 failed 4 times at about 5 s each (operation_timeout) with no error text in the process log; TC-T retries had 7-13 s gaps; the runtime cancelled at the start of retry 3, so C8 and the facade never ran and nothing reached the retry topic. Cause unconfirmed (see "Log analysis"). Also relevant to spec row 19: the runtime ended a listener execution at about 30-33 s, so the accepted worst case of "about 25 s plus the facade" is close to this runtime limit.
