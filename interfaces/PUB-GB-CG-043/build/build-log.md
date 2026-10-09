@@ -450,3 +450,105 @@ None in this attempt.
 ## Temporary Notify shapes
 
 None added. C1 v2 is unchanged and has 0 Notify shapes.
+
+---
+
+# Attempt 7 / revision 8 (round 1 fix, 2026-10-09)
+
+Spec: revision 8 (second pass), approved by the user 2026-10-09 ("yes, I approve revision 8"). Hash recomputed from the repo root: 4e1f32f5e656ec7f26bdc4455947e44804dcbaf201a4b16baf2cdb38cc7dd635 (matches pipeline-state.md). Required values: none OPEN. Kafka topic gate: `gb-cg.q.leads.in.insert` is recorded under "Kafka topics confirmed" (passed).
+
+Status: **BLOCKED: spec cannot be built as written (D8 happy path).** Every revision 8 change is implemented, pushed and deployed to 1-DEV. D4, D5, V3 (400), V5, V6 (BR-F) and the TC-A placement pass at runtime. The first successful Kafka produce shows that the Kafka Produce step outputs **no document**, so the designed valid path (C7 -> "Response 202" -> "Accepted" -> Return Documents "Accepted") never runs after a successful send, and the caller gets HTTP 200 with an empty body instead of 202 `{"status":"accepted"}`. See "Blocking item".
+
+## D0 connectivity checks (all passed)
+
+| Check | Result |
+|-------|--------|
+| `boomi-env-check.sh` | Ran; lists no variables because the project `.env` is empty. The by-name check below is the env check result (accepted by the user, spec D0) |
+| Platform variables (by name) | BOOMI_API_URL, BOOMI_USERNAME, BOOMI_API_TOKEN, BOOMI_ACCOUNT_ID, BOOMI_ENVIRONMENT_ID, BOOMI_TEST_ATOM_ID, BOOMI_VERIFY_SSL, BOOMI_TARGET_FOLDER: SET |
+| `boomi-folder-create.sh --test-connection` | Passed (account shvenergynv-6R344K). No auth error |
+| Runtime endpoint credentials | SERVER_AUTH_TYPE SET, SERVER_USERNAME SET, SERVER_TOKEN SET, SERVER_BEARER_TOKEN EMPTY (SERVER_BASE_URL SET) |
+| `platform.boomi.com` | HTTP 200 |
+| `api.boomi.com` | HTTP 200 |
+| `shv-energy-test.boomi.cloud` (1-DEV runtime) | Reachable (HTTP 404 at `/`, so the server answered) |
+| `help.boomi.com` | HTTP 200 |
+| `developer.boomi.com` | HTTP 200 (`/llms.txt`) |
+
+## Components (changed in this attempt)
+
+Folder: `SHV Energy N.V./01-Sandbox/01-Users/Priyam/BC/GB-CG/Enterprise Projects/Customer Portal/Publisher/PUB-GB-CG-043-Lead` (Rjo4ODkxNDA5). Versions before editing were checked with `boomi-version-history.sh`: C1 v2, C2 v1, C7 v2 (all current, main).
+
+| # | Name | Type | Component ID | Version before -> after | Pulled XML |
+|---|------|------|--------------|-------------------------|------------|
+| C1 | [Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG] | process | 135044a4-ad21-4ba0-b4d7-5e5c21fac446 | 2 -> 3 | build/components/process/ |
+| C2 | PUB-GB-CG-043 Lead API | webservice | 4c878feb-2bc3-42f1-9ef5-06cea4a18529 | 1 -> 2 | build/components/webservice/ |
+| C7 | PUB-GB-CG-043 Kafka Produce gb-cg.q.leads.in.insert | connector-action (kafka PRODUCE) | 583b0437-f8fc-4624-bddc-efff3172e49c | 2 -> 3 | build/components/connector-action/ |
+
+Unchanged: C3 0f214069 v1, C5 27f55bec v1, C6 f07edecd v1, C8 be398af2 v2 (left in the folder, unreferenced, F4). Reused, not edited, pushed or deployed: C4 c85b494e, C9 338df4f8 and its route targets.
+
+Changes:
+
+- **C7 v3:** `operation_timeout` 5000 -> 3000. Nothing else changed (`acks` `all`, `client_id` `gb-cg.leads`, `compression_type` `snappy`, tracking slots, no header, key or partition). C8 not changed.
+- **C2 v2:** the single REST route `overrides` now has `exactMatch="true"` (attribute form copied from fd4b3297 / 57c70a99, placed after `contentType`). `objectName="leads"`, `urlPath=""`, `httpMethod="POST"` and base path `gb-cg-leads/v1` unchanged. Description updated. C3 not changed.
+- **C1 v3** (revision 8 structure, process design steps 1 to 6):
+  - Start -> S1 "Check JSON body" -> Decision "Body is valid JSON?", outside every Try/Catch. S1 script unchanged.
+  - True -> TC-A "TC-A Technical error" (retry 0, catch all) -> try: TC-T "TC-T Kafka send" (**retry 2**, catch all) -> try: C7 produce -> "Response 202" -> Message "Accepted" -> Return Documents "Accepted". TC-T catch -> new **Exception "Kafka send failed"** (stopsingledoc true, message `Kafka send to gb-cg.q.leads.in.insert failed after 3 attempts: {1}`, {1} = Meta "Base - Try/Catch Message").
+  - TC-A catch -> BR-A (2 branches). Branch 1: "Set facade inputs" -> Process Call C9 (wait true, abort true, no return paths). Branch 2: "Response 500" (`outstatuscode` 500 and `DDP_ERROR_MESSAGE` = Meta "Base - Try/Catch Message") -> new Data Process **S2 "Build error response"** (Groovy 2.4, `groovy.json.JsonOutput.toJson([status: "error", message: <DDP_ERROR_MESSAGE or "">])`, document properties kept) -> Return Documents "Error".
+  - False -> TC-F "TC-F Functional" (retry 0) -> try: Exception "Functional error" (unchanged). TC-F catch -> BR-F (2 branches). Branch 1: "Set facade inputs" -> Process Call C9 (wait true, abort true). Branch 2: "Response 400" -> Message "Rejected" -> Return Documents "Rejected - functional error" (unchanged).
+  - Both "Set facade inputs" steps (renamed from "Set DDP_MED_NS_Msg"), in table order: FI-1 `DDP_MED_NS_Msg` = Meta "Base - Try/Catch Message"; FI-2 to FI-8 DPPs `DPP_MED_ProcessId` = Execution property `Process Id`, `DPP_MED_ProcessName` = `Process Name`, `DPP_MED_ExecutionId` = `Execution Id`, `DPP_MED_AccountId` = `Account Id`, `DPP_MED_AtomId` = `Atom Id`, `DPP_MED_AtomName` = `Atom Name`, `DPP_MED_ContainerId` = `Atom Id` (`valueType="execution"`). FI-9 to FI-15 are not set.
+  - Removed: the C8 connector step, "Response 202 (parked)", "Accepted (parked)", Return Documents "Accepted - parked on retry topic", and Message "Error". C1 no longer references C8 (be398af2).
+  - `processOverrides` unchanged (9-field c85b494e block with xpath, copied from 1b208fa6 in Attempt 4). No OperationOverride. Description "spec rev 6" -> "spec rev 8".
+- Final C1 v3 shape counts (pulled XML): catcherrors 3 (retry 0 / 2 / 0), branch 2, processcall 2 (both `wait="true" abort="true"`), returndocuments 3, exception 2, decision 1, dataprocess 2, connectoraction 1 (C7), message 2, documentproperties 5, start 1, **notify 0**. `workload="bridge"`, `allowSimultaneous="true"`. Every shape except Start has an inbound connection; no dangling or unset dragpoint; no step has two inbound outcomes from one shape. These match the spec's shape count summary.
+
+## Decisions
+
+| # | Decision | Reason |
+|---|----------|--------|
+| 1 | New shape names `shape28` (Exception "Kafka send failed") and `shape29` (S2) instead of reusing the removed shapes' names | Avoids an existing shape name changing type; shape names are identifiers only |
+| 2 | The D5 positive call (sample lead to `/leads`) was also the single D8 happy-path re-run | D8 allows one re-run and D5 needs the same request; a second call would only add another produce |
+| 3 | Base-path recheck covered all 105 API Service components, including the 34 that share a name with another component (pulled one by one into `active-development/webservice-dupcheck/`) | The name-keyed local folder holds only 87 unique names. Only C2 uses `gb-cg-leads/v1`; `gb-cg-leads/v2` is unused |
+| 4 | Stopped after one happy-path run, one negative route run and one functional-error run; no volume, tracking or other tests run | D8: "Do not run the happy path again". The happy-path defect blocks the rest |
+| 5 | Deployments left in place in 1-DEV (C1 v3, C2 v2) | Needed for the re-test after the design answer. Effect in the meantime: a valid lead is published and the caller gets HTTP 200 with an empty body |
+
+## Deviations from spec
+
+None. The blocking item below is a spec defect, not a build deviation; nothing was redesigned.
+
+## Deployments
+
+| Date | Environment | Classification | Component | Package ID | Notes |
+|------|-------------|----------------|-----------|------------|-------|
+| 2026-10-09 | 1-DEV (693e8bc2-46f8-4c7f-8259-8dcf6cf0f264) | development (user-confirmed; `--list-environments` lists it, BOOMI_ENVIRONMENT_ID equals it) | C1 135044a4 v3 | c2d1fa6b-000f-480c-b070-feb6310bb39b | Bridge mode. Replaces 7d8121d2 (C1 v2). Bundles C7 v3 and C9 v1; C8 no longer bundled |
+| 2026-10-09 | 1-DEV | development | C2 4c878feb v2 | 6a013563-d2e8-4ca6-a0f9-ff5b55986ce0 | Deployed after C1. Replaces d2229e66 (C2 v1) |
+
+The tool returns package IDs, not deployment IDs. No production environment was touched. No extension value was set.
+
+## Developer checks (Attempt 7)
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| D0 | PASS | Above |
+| D1 Environment | PASS | 1-DEV only |
+| D3 Reused connection | PASS | C4 not edited or pushed |
+| D4 Facade runtime | **PASS** | TC-10 malformed JSON, execution-c147f75b-6ae1-4b5a-92ac-eaa056290361-2026.10.09 (COMPLETE). Log: TC-F -> Exception "Functional error" -> TC-F error path -> BR-F -> "Set facade inputs" -> facade -> Process Route "CACHE_NOTIFICATION" -> route target `[MED] (sub) CACHE Notification` ... **"Document Cache Load: Shape executed successfully in 33 ms"** -> route target "completed normally" -> "Response 400" -> "Rejected" -> Return Documents "Rejected - functional error". Caller: HTTP 400 `{"status":"rejected","message":"Functional error: request body is not valid JSON"}` in 0.95 s. The `DPP_MED_ProcessId` error from 22c61363 is gone |
+| D5 API route, exact `/leads` | **PASS (v1)** | `exactMatch="true"` under `gb-cg-leads/v1`. POST `/ws/rest/gb-cg-leads/v1/leads` (15:47:35Z) started C1: execution-8bee26c5-6b6c-46de-9108-223d0e90e172-2026.10.09. POST `/ws/rest/gb-cg-leads/v1/leads/leads` (15:48:31Z, TC-03 payload) returned **HTTP 404** "Unknown operation for the given URL path." and created **no C1 execution** (the only C1 executions since the deploy are 8bee26c5 at 15:47:36Z and c147f75b at 15:48:35Z). Final endpoint: `https://shv-energy-test.boomi.cloud/ws/rest/gb-cg-leads/v1/leads`. Evidence for the setting: help.boomi.com "Adding a REST endpoint to an API service component" ("Match the exact endpoint"); account API Services fd4b3297 and 57c70a99 |
+| Base path uniqueness | PASS | Rechecked over all 105 API Service components just before deploying: only C2 uses `gb-cg-leads/v1` |
+| D6.6 Extensions | PASS | sha256 of the 1-DEV c85b494e extension entry (jq-extracted, values not displayed) 89488fd6...ef33 before the C1 push/deploy and after; unchanged. Field ids present: the 9 declared fields plus the 8 that other deployed processes declare. `set` not run |
+| D7 Producer settings | PASS | C7 v3: `acks` `all`, `operation_timeout` `3000`, `client_id` `gb-cg.leads`, `compression_type` `snappy`. Runtime: the first produce with `acks=all` **succeeded** (336 ms, 8bee26c5) |
+| D8 Happy path | **FAIL (spec defect)** | execution-8bee26c5 (COMPLETE, about 0.3 s in C1; client 1.28 s). Log: Start -> Check JSON body -> Decision True -> TC-A -> TC-T -> "Produce gb-cg.q.leads.in.insert: Shape executed successfully in 336 ms." then **"No documents found. Skipping execution for the Response 202 step."** Neither "Accepted" nor Return Documents "Accepted" ran. Caller received **HTTP 200 with an empty body**, not 202 `{"status":"accepted"}`. The produce succeeded, so the lead is expected on `gb-cg.q.leads.in.insert` (Boomi side only; no Kafka read access). One C7 attempt, no retry, no exception, no facade, no C8 |
+| V1 (TC-T) | Review only | User test decision (row 16). Structure: the TC-T catch path (Exception "Kafka send failed") sits inside the TC-A try path |
+| V3 HTTP status (`outstatuscode`) | PARTIAL | 400 confirmed at runtime (c147f75b). 202 not confirmed (D8 defect). 500 review only |
+| V5 | PASS (BR-F) | The 400 body holds the exception text "Functional error: request body is not valid JSON" read from the Try/Catch message on BR-F branch 2 |
+| V6 (BR-F) | PASS | Log order in c147f75b: facade (branch 1) completes, then branch 2 "Response 400" -> "Rejected" -> Return Documents; the HTTP body is only the branch 2 document. BR-A review only (F3) |
+| V7 | PASS (setting) | Both Process Calls `wait="true" abort="true"`, no Try/Catch around them. Facade failure not forced |
+| V8 | PASS (review) | S2 uses `groovy.json.JsonOutput.toJson`; no string concatenation. No natural 500 occurred |
+| TC-A placement (R8) | PASS | XML: Start -> S1 -> Decision; True -> TC-A; False -> TC-F. Runtime: c147f75b has no TC-A or BR-A line |
+| 0 Notify shapes | PASS | Pulled C1 v3: 0 `shapetype="notify"` |
+| Kafka failure path, TC-15, facade failure | Not run | User test decisions |
+
+## Blocking item
+
+**The Kafka Produce step emits no output document, so the valid-body path cannot return 202 as the spec designs it.** Spec process design step 4.2 to 4.5 places "Response 202" -> Message "Accepted" -> Return Documents "Accepted" after the C7 produce on the TC-T try path. In execution 8bee26c5 the produce succeeded (336 ms) and the runtime logged "No documents found. Skipping execution for the Response 202 step." The process then completed normally, and the API consumer received HTTP 200 with an empty body (the runtime default for a listener with no returned document), not 202 `{"status":"accepted"}`. C7 has `responseProfileType="none"`; spec D7 forbids any other C7 change, and no source tells the developer which setting (if any) makes a Kafka Produce pass its input document on. The developer did not redesign the path. The designer needs to decide how the 202 response is produced after a successful send (for example a step layout that does not depend on C7 output, or a C7 setting proven by documentation or an account precedent), then the user re-approves. Until then the deployed C1 v3 publishes a valid lead and answers 200 with no body.
+
+## Temporary Notify shapes
+
+None added. C1 v3 has 0 Notify shapes.

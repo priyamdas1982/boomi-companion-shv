@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 4 - developer fix mode against approved revision 8 (round 1). Next: re-review (reviewer) and test execution (tester) in 1-DEV.
+- Step: design feedback loop (2026-10-09). Developer revision 8 build returned BLOCKED: spec cannot be built as written (D8): the Kafka Produce outputs no document, so the 202 steps never run; caller gets HTTP 200 with an empty body (execution 8bee26c5). D4 and D5 pass. C1 v3, C2 v2, C7 v3 deployed to 1-DEV (packages c2d1fa6b-000f-480c-b070-feb6310bb39b, 6a013563-d2e8-4ca6-a0f9-ff5b55986ce0). Sent to the designer for revision 9.
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 8")
 - Spec approved on: 2026-10-09 (revision 8; earlier approvals superseded)
@@ -13,19 +13,19 @@ Written only by the `/build-interface` orchestrator.
 
 | Name | Type | Component ID | Version |
 |------|------|--------------|---------|
-| [Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG] | process | 135044a4-ad21-4ba0-b4d7-5e5c21fac446 | 2 |
-| PUB-GB-CG-043 Lead API | webservice | 4c878feb-2bc3-42f1-9ef5-06cea4a18529 | 1 |
+| [Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG] | process | 135044a4-ad21-4ba0-b4d7-5e5c21fac446 | 3 |
+| PUB-GB-CG-043 Lead API | webservice | 4c878feb-2bc3-42f1-9ef5-06cea4a18529 | 2 |
 | PUB-GB-CG-043 WSS Listen Lead | connector-action (wss) | 0f214069-c48d-4633-b60d-189e21dec918 | 1 |
 | PUB-GB-CG-043 Lead Request JSON | profile.json | 27f55bec-bae3-4465-87cc-ad9a8944e71d | 1 |
 | PUB-GB-CG-043 Lead Response JSON | profile.json | f07edecd-68d1-4aeb-acd1-e1b5fc28cb96 | 1 |
-| PUB-GB-CG-043 Kafka Produce gb-cg.q.leads.in.insert | connector-action (kafka) | 583b0437-f8fc-4624-bddc-efff3172e49c | 2 |
+| PUB-GB-CG-043 Kafka Produce gb-cg.q.leads.in.insert | connector-action (kafka) | 583b0437-f8fc-4624-bddc-efff3172e49c | 3 |
 | PUB-GB-CG-043 Kafka Produce gb-cg.q.leads.in.retry | connector-action (kafka) | be398af2-5ce6-48b1-b116-ba822ca179f5 | 2 |
 
 ## Status
 
 - Open findings: round 1 fixes applied (F-1-01, F-1-03 fixed; F-1-02 no build change), pending re-review. Developer checks blocked: D4, D5, happy path
 - Disputed findings:
-- Last test result: none yet (developer checks only: executions bcec584b (wrong path), 93e06b38 (happy path, timeout), 22c61363 (malformed JSON, facade error), all 2026.10.09)
+- Last test result: none yet (tester). Developer checks 2026-10-09: D4 PASS (c147f75b, 400), D5 PASS (/leads/leads 404), D8 FAIL (8bee26c5, 200 empty body). Earlier (developer checks only: executions bcec584b (wrong path), 93e06b38 (happy path, timeout), 22c61363 (malformed JSON, facade error), all 2026.10.09)
 
 ## User rulings
 

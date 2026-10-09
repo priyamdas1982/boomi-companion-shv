@@ -17,3 +17,24 @@ Status: BLOCKED: connectivity (D0). No revision 7 change was implemented in this
 ### Re-run (Attempt 6, 2026-10-09)
 
 Status: BLOCKED: V7 not confirmed by Boomi documentation. D0 passed on all hosts. No component was changed, pushed or deployed, and none of the revision 7 changes is implemented yet. help.boomi.com "Process Call step" says: "Wait for the process to complete. If selected, ... If the subprocess fails, the parent process stops." No source says abort = false lets branch 2 run; see build-log.md "Attempt 6 / revision 7". D5 evidence was gathered for the next round: route attribute `exactMatch="true"` ("Match the exact endpoint"), documented and used by account API Services fd4b3297 and 57c70a99; `gb-cg-leads/v1` is used only by C2 and `gb-cg-leads/v2` is free.
+
+## Round 1, revision 8
+
+Built against spec revision 8 (hash 4e1f32f5e656ec7f26bdc4455947e44804dcbaf201a4b16baf2cdb38cc7dd635). Details and evidence: `build/build-log.md`, "Attempt 7 / revision 8".
+
+Status: **BLOCKED: spec cannot be built as written (D8 happy path).** All revision 8 changes are implemented, pushed and deployed to 1-DEV. The Kafka Produce step outputs no document, so "Response 202", "Accepted" and Return Documents "Accepted" never run after a successful send; the caller gets HTTP 200 with an empty body (execution 8bee26c5). This needs a design decision.
+
+| Finding / item | Response | Component and new version | Change or reason |
+|----------------|----------|---------------------------|------------------|
+| F-1-01 (blocker) | FIXED (unchanged since Round 1) | C1 135044a4 v3, package c2d1fa6b-000f-480c-b070-feb6310bb39b | 9-field c85b494e block with xpath carried over unchanged; 1-DEV extension entry hash unchanged before and after the deploy |
+| F-1-02 (minor) | NO CHANGE | C3 0f214069 v1, C7 583b0437 v3 | Tracking slots `primarykey` = `Email`, `primaryvalue` = `email` unchanged |
+| F-1-03 (minor) | FIXED | C7 583b0437 v3 | `operation_timeout` 5000 -> 3000 (spec rows 18, 26); `acks` `all` accepted at runtime (successful produce in 8bee26c5). C8 not changed and no longer used |
+| Rev 8: TC-A on the valid-body path only | DONE | C1 v3 | Start -> S1 -> Decision outside every Try/Catch; True -> TC-A -> TC-T; False -> TC-F (runtime: no TC-A in c147f75b) |
+| Rev 7/8: TC-T retry 2, Exception "Kafka send failed", no C8 step | DONE | C1 v3, C7 v3 | Retry count 2; TC-T catch path holds only the Exception step; C8 step and the parked-path steps removed; C1 has no reference to C8 |
+| Rev 7: facade inputs | DONE | C1 v3 | FI-1 to FI-8 on both "Set facade inputs" steps (execution properties); FI-9 to FI-15 not set. D4 PASS (c147f75b: Document Cache Load succeeds, 400 returned) |
+| Rev 7: S2 escaped 500 body | DONE | C1 v3 | "Response 500" sets `DDP_ERROR_MESSAGE`; S2 builds the body with `JsonOutput`; Message "Error" removed |
+| Rev 8: facade calls wait = true, abort = true | DONE | C1 v3 | Both Process Calls; no Try/Catch around them |
+| Rev 8: C2 exact route (D5) | DONE, PROVEN | C2 4c878feb v2, package 6a013563-d2e8-4ca6-a0f9-ff5b55986ce0 | `exactMatch="true"` under `gb-cg-leads/v1`: `/leads` reached C1 (8bee26c5); `/leads/leads` returned 404 with no C1 execution |
+| D8 happy path | BLOCKED | C1 v3 | Produce succeeded (336 ms), then "No documents found. Skipping execution for the Response 202 step."; caller got HTTP 200 with an empty body instead of 202 `{"status":"accepted"}`. Needs the designer (spec process design step 4) |
+
+FIXED: 2 (F-1-01, F-1-03). DISPUTED: 0.
