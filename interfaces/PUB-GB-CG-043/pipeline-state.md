@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: design feedback loop (2026-10-09). Developer revision 8 build returned BLOCKED: spec cannot be built as written (D8): the Kafka Produce outputs no document, so the 202 steps never run; caller gets HTTP 200 with an empty body (execution 8bee26c5). D4 and D5 pass. C1 v3, C2 v2, C7 v3 deployed to 1-DEV (packages c2d1fa6b-000f-480c-b070-feb6310bb39b, 6a013563-d2e8-4ca6-a0f9-ff5b55986ce0). Sent to the designer for revision 9.
+- Step: 1.4 - spec revision 9 READY FOR APPROVAL (2026-10-09), waiting for the user's approval. C1 v3, C2 v2, C7 v3 deployed to 1-DEV (valid lead currently answers 200 empty).
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 8")
 - Spec approved on: 2026-10-09 (revision 8; earlier approvals superseded)
