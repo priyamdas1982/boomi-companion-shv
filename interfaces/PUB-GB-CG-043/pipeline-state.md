@@ -45,3 +45,9 @@ Written only by the `/build-interface` orchestrator.
 3. (retries vs runtime limit) "kafka outage should give an error back."
 4. (/leads/leads reaches C1) "b" (defect: designer changes the route).
 Standing rules added at the user's request ("set those rules forever"): Kafka topics confirmed by the user before any build; developer runs connectivity checks first (CLAUDE.md, build-interface skill, developer role).
+
+## User redesign instruction (2026-10-09, verbatim)
+
+Q1 follow-up: "kafka failure is rarity."
+Then: "redesign, also change in design rules: if kafka fails, try 3 times. throw exception. return exception to api consumer.  handled or unhandled."
+Added to CLAUDE.md as the standing rule "Kafka send failures". Relayed to the designer for revision 7.

@@ -160,6 +160,10 @@ Before sending, call the process `[MED] (sub) CACHE Notification Facade`, locate
 
 Before calling that facade, set the DDP `DDP_MED_NS_Msg` to the Try/Catch message.
 
+### Kafka send failures
+
+If a process sends to Kafka and the send fails, try the send 3 times. If it still fails, throw an exception and return that exception to the API consumer. This applies to every error, handled or unhandled: the API consumer must always receive the error, never a success response for a send that failed.
+
 ### Kafka topics must exist before the build
 
 If a design produces to or consumes from any Kafka topic, the build must not start until the human developer (the user) has confirmed that every topic the design names has been created in Confluent Kafka. Ask the user for this confirmation, naming each topic, and wait for an explicit answer. Never infer topic existence from the platform, from earlier executions, or from another interface. Never create topics yourself.
