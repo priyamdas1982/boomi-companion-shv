@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1 - designer revision 7 DRAFT - OPEN QUESTIONS (10 questions put to the user, 2026-10-09). Revision 6 approval no longer covers the spec; re-approval needed. C1, C7, C8 at v2 in 1-DEV (package 7d8121d2-647f-493d-a192-8d01219cd7c7).
+- Step: 1 - designer revision 7 (second pass) DRAFT - OPEN QUESTIONS: 8 questions put to the user 2026-10-09 (Q1 retries vs runtime limit, Q2 raw exception text, Q3-8 facade inputs). Re-approval needed. C1, C7, C8 at v2 in 1-DEV (package 7d8121d2-647f-493d-a192-8d01219cd7c7).
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 6")
 - Spec approved on: 2026-10-08 (revision 6; earlier approvals superseded)
