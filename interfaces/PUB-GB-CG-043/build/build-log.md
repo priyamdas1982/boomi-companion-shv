@@ -361,3 +361,29 @@ None added. Final C1 v2 has 0 Notify shapes.
 1. **D4 facade fails in 1-DEV** (spec D4: "If it fails ... stop and return to the orchestrator. Do not deploy or edit shared framework components"). The facade's Process Route target fails on the cache index key `DDP_MED_ProcessId`, which the spec does not tell C1 to set. The designer needs to decide which DDPs (for example `DDP_MED_ProcessId`, and possibly `DDP_MED_NS_Code` / `DDP_MED_NS_Level`, which the facade reads) C1 must set before the facade call, and their values, or whether the 1-DEV framework deployment is at fault. Evidence: execution 22c61363. **Updated by the log analysis:** the route target is deployed and runs; the fatal missing input is the process property `DPP_MED_ProcessId`, and 12 further facade inputs are unset (see "Log analysis").
 2. **D5 wrong path reaches C1** (spec D5: "If the effective path differs, stop and return to the orchestrator"). `/ws/rest/gb-cg-leads/v1/leads/leads` started C1 (execution bcec584b), so the API Service route also matches a trailing extra segment.
 3. **Happy path does not complete and main-topic existence is unconfirmed** (spec "Topic existence": "If not, stop and return to the orchestrator"). Execution 93e06b38 exceeded the runtime's maximum execution time (about 30 s) with no response. The C7 error is not visible because the log download fails (curl exit 56). **Updated by the log analysis:** logs now downloaded. C7 failed 4 times at about 5 s each (operation_timeout) with no error text in the process log; TC-T retries had 7-13 s gaps; the runtime cancelled at the start of retry 3, so C8 and the facade never ran and nothing reached the retry topic. Cause unconfirmed (see "Log analysis"). Also relevant to spec row 19: the runtime ended a listener execution at about 30-33 s, so the accepted worst case of "about 25 s plus the facade" is close to this runtime limit.
+
+---
+
+# Attempt 5 / revision 7 (round 1 fix, 2026-10-09)
+
+Status: **BLOCKED: connectivity** at D0. Nothing was created, changed, pushed or deployed in this attempt. C1 135044a4 v2 (package 7d8121d2), C2 4c878feb v1, C3 0f214069 v1, C7 583b0437 v2 and C8 be398af2 v2 are unchanged.
+
+## D0 connectivity checks
+
+| Check | Result |
+|-------|--------|
+| `boomi-env-check.sh` | Exit 1, no variable list. The project `.env` is empty (0 bytes); the script reads variable names from `.env`, so it lists nothing. The credentials come from the process environment instead (checked by name only, below) |
+| `boomi-folder-create.sh --test-connection` | Passed (connected to account shvenergynv-6R344K) |
+| Platform variables | BOOMI_API_URL, BOOMI_USERNAME, BOOMI_API_TOKEN, BOOMI_ACCOUNT_ID, BOOMI_ENVIRONMENT_ID, BOOMI_TEST_ATOM_ID, BOOMI_VERIFY_SSL, BOOMI_TARGET_FOLDER: SET (process environment) |
+| Runtime endpoint credentials | SERVER_USERNAME: SET. SERVER_TOKEN: SET. SERVER_BEARER_TOKEN: EMPTY. SERVER_AUTH_TYPE: SET. SERVER_BASE_URL: SET |
+| `platform.boomi.com` (log downloads) | Reachable (HTTP 200) |
+| `api.boomi.com` | Reachable (HTTP 200) |
+| `shv-energy-test.boomi.cloud` (1-DEV runtime) | Reachable (HTTP 404 at `/`, so the server answered) |
+| `help.boomi.com` | **Not reachable**: proxy CONNECT 403 (curl exit 56); WebFetch: DNS lookup failed (ENOTFOUND) |
+| `developer.boomi.com` | **Not reachable**: proxy CONNECT 403 (curl exit 56); WebFetch: DNS lookup failed (ENOTFOUND) |
+
+Spec hash recomputed: 8a32401414260fab4c811eeb3093d9cb5789aa2948caa93135861a919a8f0d49 (matches pipeline-state.md). Kafka topic gate: `gb-cg.q.leads.in.insert` is recorded under "Kafka topics confirmed" (passed).
+
+## Blocking item
+
+The run needs the Boomi documentation hosts: the orchestrator requires V7 (Process Call abort = false lets branch 2 run after a facade failure) to be verified against Boomi documentation before relying on it, and D5 step 1 requires a documentation search for an exact API Service route. Both `help.boomi.com` and `developer.boomi.com` are unreachable from this session, so D0 fails and, per CLAUDE.md "Connectivity checks first", nothing was changed. Remedy: allow `help.boomi.com` and `developer.boomi.com` through the session's network policy, or have the user paste the relevant Boomi documentation (Process Call shape "Abort if process fails"; API Service REST route / URL path matching), then re-run the developer.
