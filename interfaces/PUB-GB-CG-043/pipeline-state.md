@@ -2,11 +2,12 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 4 - developer fix mode returned BLOCKED (2026-10-09). F-1-01 and F-1-03 FIXED (C1, C7, C8 now v2, C1 redeployed to 1-DEV, package 7d8121d2-647f-493d-a192-8d01219cd7c7); F-1-02 NO CHANGE (wording only, build already matches row 9). Developer checks failed: D4 (facade: "Could not determine value for Index key: DDP_MED_ProcessId"), D5 (/leads/leads also reaches C1), happy path (execution timed out at about 33 s, no response, log not downloadable). Waiting on user decisions under the design feedback loop. Credentials: SERVER_USERNAME, SERVER_TOKEN SET; SERVER_AUTH_TYPE basic. Log analysis 2026-10-09 (platform.boomi.com allowed by user): happy path C7 failed 4 x at the 5 s operation_timeout with no Kafka error text, runtime cut the execution at about 33 s before TC-T catch, C8 never ran (nothing sent to retry topic); facade route fails because C1 does not set DPP_MED_ProcessId and other DPP_MED_*/DDP_MED_NS_* inputs. Waiting on user answers.
+- Step: design feedback loop (2026-10-09). Developer BLOCKED in round 1 fix (D4 facade inputs, D5 /leads/leads, happy path / Kafka outage behaviour). User answers relayed to the designer for revision 7; re-approval needed. C1, C7, C8 at v2 in 1-DEV (package 7d8121d2-647f-493d-a192-8d01219cd7c7).
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 6")
 - Spec approved on: 2026-10-08 (revision 6; earlier approvals superseded)
 - Spec hash: 9bcb1e480fb9e77fa301ce599a14df9f3cfedf46dca32e0a67fe7c5d90a4cf5a
+- Kafka topics confirmed: `gb-cg.q.leads.in.insert` and `gb-cg.q.leads.in.retry` (user, 2026-10-09: "I have just created gb-cg.q.leads.in.retry and gb-cg.q.leads.in.insert in confluent")
 
 ## Components
 
@@ -36,3 +37,11 @@ Written only by the `/build-interface` orchestrator.
 - TC-15 (unauthenticated call): recorded as "not run" (user: "TC-15 not run is fine").
 - Kafka topic contents: no read access will be given (user: "no Kafka read access"). Message count, body, headers and key are verified on the Boomi side only (process log and Process Reporting) and reported as "partly verified (Boomi side only)".
 - Technical-error and retry-send-failure paths: review only (spec revision 5, user: "C, review only for now").
+
+## User answers to developer BLOCKED (2026-10-09, verbatim)
+
+1. "I have just created gb-cg.q.leads.in.retry and gb-cg.q.leads.in.insert in confluent."
+2. (facade inputs) "set whatever needs to be set and available to you."
+3. (retries vs runtime limit) "kafka outage should give an error back."
+4. (/leads/leads reaches C1) "b" (defect: designer changes the route).
+Standing rules added at the user's request ("set those rules forever"): Kafka topics confirmed by the user before any build; developer runs connectivity checks first (CLAUDE.md, build-interface skill, developer role).

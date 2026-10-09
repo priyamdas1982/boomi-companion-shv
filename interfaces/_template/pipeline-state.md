@@ -7,6 +7,7 @@ Written only by the `/build-interface` orchestrator.
 - Spec approved: no
 - Spec approved on:
 - Spec hash:
+- Kafka topics confirmed:
 
 ## Components
 

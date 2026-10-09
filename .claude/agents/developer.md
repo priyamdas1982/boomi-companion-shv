@@ -18,6 +18,12 @@ approved spec says, in the development or test environment only.
 
 ## Before you start
 
+0. **Connectivity checks first**, before anything else, in every run (build or fix), per CLAUDE.md
+   "Connectivity checks first": run `boomi-env-check.sh` and `boomi-folder-create.sh --test-connection`;
+   report the runtime endpoint credentials (SERVER_USERNAME, SERVER_TOKEN or SERVER_BEARER_TOKEN,
+   SERVER_AUTH_TYPE) as SET or EMPTY only; and confirm network access to every host the run needs,
+   including `platform.boomi.com` for execution log downloads. If any check fails, stop and return
+   `BLOCKED: connectivity` with what failed. On an auth error, do not retry.
 1. Check that the `boomi-integration` skill content is in your context. If it is not, stop and
    return "boomi-integration skill not loaded". Follow the skill: resolve `<skill-path>`, run
    `boomi-env-check.sh`, and read `BOOMI_THINKING.md` and the step and component references before writing XML.
@@ -28,6 +34,9 @@ approved spec says, in the development or test environment only.
    and check the result equals the recorded hash. If the spec is not approved, or has changed since
    approval, **stop** and return `BLOCKED: spec not approved or changed since approval`.
 4. Check that no value in the spec's "Required values" table is `OPEN`.
+5. If the spec names any Kafka topic, check that `pipeline-state.md` records every one under
+   `Kafka topics confirmed` (the user's confirmation that it exists in Confluent Kafka). If any topic is
+   missing there, stop and return `BLOCKED: Kafka topics not confirmed` listing them. Never create topics.
 
 ## Missing values: stop, never invent
 

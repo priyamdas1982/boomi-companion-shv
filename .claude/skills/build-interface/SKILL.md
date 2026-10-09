@@ -50,7 +50,13 @@ naming, folder path, sequence number and tracking field. You do not ask for them
 
 ## 2. Build
 
-Run **developer** in build mode.
+1. **Kafka topics gate.** If the approved spec names any Kafka topic (produce or consume), ask the user to
+   confirm that each named topic has been created in Confluent Kafka. List the topics. Do not start the build
+   until the user explicitly confirms every one. Record the confirmation in `pipeline-state.md` under
+   `Kafka topics confirmed` (topic, user's words, date). If the spec's topics change later, ask again for
+   the new ones before the developer builds or fixes against them.
+2. Run **developer** in build mode. Its first step is the connectivity checks (CLAUDE.md "Connectivity checks
+   first"). If it returns `BLOCKED: connectivity`, tell the user exactly what failed and stop.
 
 If it returns `BLOCKED`, handle it under "Design feedback loop" below. Otherwise record the component IDs
 in `pipeline-state.md` and set round = 1.
@@ -77,6 +83,8 @@ Ask them to rule on each one. Record the rulings in `pipeline-state.md`. Continu
 If there are open **blocker** or **major** findings, or test defects from the previous round's step 5,
 run **developer** in fix mode with the list of finding and defect IDs. Then check its fix response for
 `DISPUTED` answers (see Disputes above). Minor findings are not sent for fixing; they stay open for the summary.
+
+The Kafka topics gate in step 2 also applies before fix mode when the spec names a topic not yet confirmed.
 
 If there is nothing to fix, skip to step 5.
 

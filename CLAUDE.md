@@ -160,6 +160,14 @@ Before sending, call the process `[MED] (sub) CACHE Notification Facade`, locate
 
 Before calling that facade, set the DDP `DDP_MED_NS_Msg` to the Try/Catch message.
 
+### Kafka topics must exist before the build
+
+If a design produces to or consumes from any Kafka topic, the build must not start until the human developer (the user) has confirmed that every topic the design names has been created in Confluent Kafka. Ask the user for this confirmation, naming each topic, and wait for an explicit answer. Never infer topic existence from the platform, from earlier executions, or from another interface. Never create topics yourself.
+
+### Connectivity checks first
+
+The first thing the developer does in every run (build or fix) is check connectivity, before any other step: the Boomi platform credentials and connection (`boomi-env-check.sh`, `boomi-folder-create.sh --test-connection`), the runtime endpoint credentials needed for testing (reported only as SET or EMPTY, never their values), and network access to every host the run needs, including `platform.boomi.com` for execution log downloads. If any check fails, stop and report it before creating, changing or deploying anything. On an auth error, do not retry (see Boomi Integration Project).
+
 ### Connector extensions
 
 All connector settings must be externalised as environment extensions. Make connection properties (such as URLs, hosts, ports and credentials) and operation properties extensible so the process can be promoted across environments without editing the component. Do not bake environment-specific connector values into the component XML.
