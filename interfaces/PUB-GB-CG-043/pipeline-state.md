@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1 - designer revision 8 DRAFT - OPEN QUESTIONS (1 question: facade failure on the functional-error path, row 29), put to the user 2026-10-09. Revision 7 approval superseded once revision 8 is approved. Components unchanged (C1 v2, C2 v1, C3 v1, C7 v2, C8 v2).
+- Step: 1.4 - spec revision 8 READY FOR APPROVAL (2026-10-09), waiting for the user's approval. Components unchanged (C1 v2, C2 v1, C3 v1, C7 v2, C8 v2).
 - Round: 1 / 3
 - Spec approved: yes (user: "yes, I approve revision 7")
 - Spec approved on: 2026-10-09 (revision 7; earlier approvals superseded)

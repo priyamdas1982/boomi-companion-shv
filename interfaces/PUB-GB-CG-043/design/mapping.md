@@ -1,6 +1,6 @@
 # Field mapping: PUB-GB-CG-043
 
-Revision 8 (2026-10-09, user: "if facade fails, throw an exception. unhandled."). No field rule changes. Only the response note for a facade failure changes: the facade Process Calls are wait = true, abort = true (spec row 28), so when the facade fails no C6 response is built; the execution fails unhandled and the caller gets the runtime's default 500 (not JSON). R1 and R2 apply only to responses C1 builds. On the functional-error path the exact outcome of a facade failure depends on spec open question 1 (row 29). No `OPEN` rows in this file.
+Revision 8 (2026-10-09, user: "if facade fails, throw an exception. unhandled."). No field rule changes. Only the response note for a facade failure changes: the facade Process Calls are wait = true, abort = true (spec row 28), so when the facade fails no C6 response is built; the execution fails unhandled and the caller gets the runtime's default 500 (not JSON). R1 and R2 apply only to responses C1 builds. Second pass (user: "b", spec row 29): TC-A wraps only the valid-body path, so a facade failure on the functional-error path is also unhandled (runtime default 500, no C6 body), and so is any unexpected error on BR-F branch 2 or in S1/the Decision. The normal 400 (R1 `rejected`, R2 functional error text) and the 500 JSON for a Kafka failure are unchanged. No `OPEN` rows in this file.
 
 Revision 7, third pass (2026-10-09, user: "1a 2a 3-8: a"). No `OPEN` rows remain. The 500 `message` carries the full exception text as is (user "2a"); for a Kafka failure it reads `... failed after 3 attempts: ...` (3 attempts, user "1a"). FI-10 to FI-15 are not set (user "3-8: a"). No field rule for the request or the Kafka message changes.
 
@@ -67,7 +67,7 @@ Corrected sample (test payload and profile source):
 
 ## Response: WSS output -> APIM / Sitecore
 
-Response profile: `PUB-GB-CG-043 Lead Response JSON` (C6). Built by Message steps; the HTTP status is set per outcome (spec, "HTTP response per outcome"). Revision 8: when the facade fails, C1 builds no response (unhandled failure, runtime default 500; spec row 28), so these rows do not apply to that case.
+Response profile: `PUB-GB-CG-043 Lead Response JSON` (C6). Built by Message steps; the HTTP status is set per outcome (spec, "HTTP response per outcome"). Revision 8: when the facade fails (either path), or an unexpected error occurs on BR-F branch 2 or in S1/the Decision, C1 builds no response (unhandled failure, runtime default 500; spec rows 28, 29), so these rows do not apply to those cases.
 
 | # | Source | Target field / path | Transformation / rule | Required | Example |
 |---|--------|---------------------|-----------------------|----------|---------|
