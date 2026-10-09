@@ -199,3 +199,101 @@ None added. The final C1 has 0 Notify shapes.
 ## Blocking item
 
 - SERVER_USERNAME and SERVER_TOKEN (Basic credentials for the 1-DEV runtime shared web server / Atom Cloud perimeter at https://shv-energy-test.boomi.cloud): needed to call `/ws/rest/gb-cg-leads/v1/leads` for D4, D5, V3, V5, V6 (BR-F), topic existence (main topic) and the happy-path check (CLAUDE.md section: Credentials & .env files; spec "Developer checks, run first"). The variables are defined but empty in this session, and the endpoint returns 401 without auth.
+
+---
+
+# Attempt 4 / Round 1 fix (spec revision 6), 2026-10-09
+
+Spec hash built from: 9bcb1e480fb9e77fa301ce599a14df9f3cfedf46dca32e0a67fe7c5d90a4cf5a (recomputed 2026-10-09, matches pipeline-state.md; spec revision 6). Required values: none OPEN.
+
+Status: findings F-1-01 and F-1-03 fixed, pushed and deployed to 1-DEV; F-1-02 needs no build change. **BLOCKED** on three runtime developer checks run for the first time with endpoint credentials: D4 (facade fails), D5 (wrong path also reaches C1) and the happy path / main-topic existence (execution time limit exceeded). See "Blocking items".
+
+## Components (changed in this attempt)
+
+Folder: `SHV Energy N.V./01-Sandbox/01-Users/Priyam/BC/GB-CG/Enterprise Projects/Customer Portal/Publisher/PUB-GB-CG-043-Lead` (Rjo4ODkxNDA5).
+
+| # | Name | Type | Component ID | Version before -> after | Pulled XML |
+|---|------|------|--------------|-------------------------|------------|
+| C1 | [Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG] | process | 135044a4-ad21-4ba0-b4d7-5e5c21fac446 | 1 -> 2 | build/components/process/ (byte-identical to the platform v2 pull) |
+| C7 | PUB-GB-CG-043 Kafka Produce gb-cg.q.leads.in.insert | connector-action (kafka PRODUCE) | 583b0437-f8fc-4624-bddc-efff3172e49c | 1 -> 2 | build/components/connector-action/ |
+| C8 | PUB-GB-CG-043 Kafka Produce gb-cg.q.leads.in.retry | connector-action (kafka PRODUCE) | be398af2-5ce6-48b1-b116-ba822ca179f5 | 1 -> 2 | build/components/connector-action/ |
+
+Unchanged: C2 4c878feb v1, C3 0f214069 v1, C5 27f55bec v1, C6 f07edecd v1. Reused, not edited or pushed: C4 c85b494e (still v9, current), C9 338df4f8 (still v1, current).
+
+Versions before editing (verified with `boomi-version-history.sh`, 2026-10-09): C1 v1, C7 v1, C8 v1 (all current, main), so the earlier stopped fix run had pushed nothing.
+
+Read-only pulls (into active-development only, not edited or pushed): 1b208fa6-9aa8-4014-b77d-51be59717e91 `[Publisher]-[PUB-GB-CG-043]-[CreateLead]-[Customer Portal]-[GB-CG]` v1 (folder PUB-GB-CG-043-leads), C4 c85b494e v9, C9 338df4f8 v1, and 9 account Kafka PRODUCE operations (a1970311, 2806373d, d2dc4e94, 2cd81cdd, 9048f954, 01367749, d27a7bda, ee30a67e, 8435e3e3) for the D7 precedent check.
+
+Changes:
+
+- C1: the `ConnectionOverride` for c85b494e was replaced with the block from 1b208fa6, copied verbatim (9 fields, same `label`, `overrideable="true"` and `xpath="GenericConnectionConfig/field[@id='<id>']/@value"` on each). Nothing else in `processOverrides` was copied (1b208fa6 also has `<Properties><PropertyOverride name="DPP_KAFKA_TOPIC"/>`, which is outside the ConnectionOverride block and is not used by C1). Description text "spec rev 5" -> "spec rev 6". No shape changed.
+- C7, C8: `acks` `1` -> `all`, `operation_timeout` `30000` -> `5000`. `client_id` `gb-cg.leads` and `compression_type` `snappy` unchanged. Nothing else changed (no header, key or partition).
+
+Final C1 v2 shape counts (pulled XML): catcherrors 3, branch 2, processcall 2, returndocuments 4, exception 1, decision 1, dataprocess 1, connectoraction 2, documentproperties 6, message 4, start 1, **notify 0**. `workload="bridge"`, `allowSimultaneous="true"`. 9 `xpath` attributes in `processOverrides`. No OperationOverride.
+
+## Developer checks (2026-10-09)
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Spec hash | PASS | Recomputed hash equals the recorded hash |
+| Platform connection | PASS | `--test-connection`: authenticated to shvenergynv-6R344K. Credentials come from the process environment (.env is empty) |
+| D1 Environment | PASS | `--list-environments`: 1-DEV = 693e8bc2-46f8-4c7f-8259-8dcf6cf0f264; BOOMI_ENVIRONMENT_ID equals it; user-confirmed development. No other environment touched |
+| D3 Reused connection | PASS (unchanged) | c85b494e still v9, current. Not edited or pushed |
+| D6.1 Pull 1b208fa6 read only | PASS | Pulled v1; not edited, pushed or deployed. It has no execution records (`boomi-execution-query.sh --process-id 1b208fa6...`: 0) |
+| D6.2 Copy block verbatim | PASS | C1 v2 block = 1b208fa6 block for c85b494e, field for field (9 fields with xpath) |
+| D6.3 Every copied field exists in C4 | PASS | C4 `GenericConnectionConfig` fields: username, password, bootstrap_servers, service_principal, security_protocol, sasl_mechanism, private_certificate, polling_interval, polling_delay, consumer_group. All 9 copied ids are present |
+| D6.4 C4 fields not covered | PASS (accepted exception) | Only `consumer_group` (spec row 20, user "2. a"). No other uncovered field |
+| D6.5 No C7/C8 operation overrides | PASS | `<Operations>` absent from C1 processOverrides |
+| D6.6 Extensions after redeploy | PASS | `boomi-extensions.sh get` before the push and after the deploy: the 1-DEV c85b494e entry is present with the same field list (17 field ids, because other deployed processes still declare the 17-field block), and the sha256 of the c85b494e entry is identical before and after (79ae05c8...0d95). `set` not run. With the xpath binding, the 1-DEV values now apply to C1: username (useDefault=false, the value equals the C4 component value by hash comparison, value not recorded), password (encrypted value set; cannot be compared), all other fields useDefault=true (component defaults) |
+| D7 Producer settings | PASS (component); runtime see below | C7 v2 and C8 v2: acks `all`, operation_timeout `5000`, client_id `gb-cg.leads`, compression_type `snappy`. The push accepted `all`. No account precedent for `all` exists (the 9 sampled Kafka PRODUCE operations use `acks` `0` or `1`, all with operation_timeout 30000). Whether `operation_timeout` bounds the whole send including the wait for broker metadata: **not determined**. Boomi docs are unreachable (help.boomi.com and developer.boomi.com: getaddrinfo ENOTFOUND), no account precedent shows it, and the happy-path log could not be downloaded (see below). Runtime acceptance of `acks=all` is also not confirmed, because no produce has succeeded yet |
+| Base path `gb-cg-leads/v1` uniqueness (recheck before deploy) | PASS | `component-search --type webservice`: 105 components = the 104 from Attempt 2 plus C2. The only component modified since 2026-10-08 is C2 |
+| Bridge mode | PASS | C1 v2 packaged with `workload="bridge"`; executions report `type=exec_listener_bridge` |
+| D5 API route, correct path | PASS | POST `/ws/rest/gb-cg-leads/v1/leads` (basic auth from the environment) started C1 execution 93e06b38 (launcherID = C2 4c878feb) |
+| D5 API route, wrong path | **FAIL** | POST `/ws/rest/gb-cg-leads/v1/leads/leads` (payload TC-03) **also** started C1: execution bcec584b. The spec says this path must not reach C1. Stopped as D5 instructs |
+| Happy path, main topic existence, V3 (202) | **FAIL / NOT CONFIRMED** | TC-01 sample lead, execution 93e06b38: HTTP client got no response within 30 s (HTTP 000); execution status ERROR, "Process exceeded maximum execution time limit", duration 33 385 ms, inbound 1, inbound error 1, outbound 0. The main-topic produce did not complete successfully within the runtime's limit. Cause not determined: the process log download fails (`boomi-execution-query.sh --logs` exits with curl code 56, three tries), so the C7 error text is not visible. Candidates: topic `gb-cg.q.leads.in.insert` missing in the 1-DEV cluster; Kafka connection or authentication with the now-bound 1-DEV extension values; `acks=all` rejected or not satisfiable; the producer metadata wait not being bounded by `operation_timeout`. The wrong-path run bcec584b (same valid lead body) ended the same way (ERROR, same message, 30 082 ms). It is not known whether the TC-T catch path ran C8 during these two runs, so a message on `gb-cg.q.leads.in.retry` cannot be ruled out; nothing was sent to it deliberately |
+| D4 Facade runtime | **FAIL** | TC-10 malformed JSON, execution 22c61363: HTTP 500 with the runtime's default HTML error page, body "Error indexing document. Could not determine value for Index key: DDP_MED_ProcessId"; status ERROR, 928 ms, outbound 0. The facade 338df4f8 only reads DDP_MED_NS_Code, DDP_MED_NS_Level and DDP_MED_NS_Msg and then calls Process Route `resource::rout:76eb8a3a-3b83-4ecc-80db-6b01446a65b2` (`[MED] Process Service`); the failing cache index key `DDP_MED_ProcessId` is not set anywhere in C1 or in the facade. The error escaped BR-F branch 1, then TC-A, then BR-A branch 1 (second facade call), matching the spec row "facade call on BR-A branch 1 also fails -> runtime default". Shared framework components not changed or deployed |
+| V3 (400) | NOT CONFIRMED | Blocked by D4: BR-F branch 2 never ran |
+| V5, V6 (BR-F) | NOT CONFIRMED | Blocked by D4 |
+| V1 TC-T, V6 BR-A, technical-error and retry-send-failure tests | Review only | User test decision (spec row 16). Not forced |
+| Topic `gb-cg.q.leads.in.retry` existence | NOT RUN | Spec: no deliberate produce to the retry topic |
+| TC-15 | NOT RUN | User test decision |
+
+Executions (all in 1-DEV, atom 9beaf0cb MCS_NL-HM_DEV_1):
+
+| Execution ID | Request | Result |
+|--------------|---------|--------|
+| execution-93e06b38-ff26-465e-8d04-4bd5a37fbede-2026.10.09 | POST /ws/rest/gb-cg-leads/v1/leads, TC-01 happy-path lead | ERROR, "Process exceeded maximum execution time limit", 33.4 s, client HTTP 000 after 30 s |
+| execution-22c61363-80dd-4f5e-aaa5-5fb369afbd7d-2026.10.09 | POST /ws/rest/gb-cg-leads/v1/leads, TC-10 malformed JSON | ERROR, "Error indexing document. Could not determine value for Index key: DDP_MED_ProcessId", 0.9 s, client HTTP 500 (runtime default page) |
+| execution-bcec584b-4848-4856-b7ac-d4ea1b89c0d7-2026.10.09 | POST /ws/rest/gb-cg-leads/v1/leads/leads, TC-03 (wrong path) | Reached C1 (D5 fail). ERROR, "Process exceeded maximum execution time limit", 30.1 s, client HTTP 000 |
+
+## Decisions
+
+| # | Decision | Reason |
+|---|----------|--------|
+| 1 | `acks` written as the literal string `all` | Spec row 18 and D7 say `all`. No account precedent or reachable documentation gives another stored form (for example `-1`); substituting one would be inventing a value. The platform accepted the push |
+| 2 | Only the `ConnectionOverride` element was copied from 1b208fa6, not its `DPP_KAFKA_TOPIC` property override | D6.2 names the ConnectionOverride block only; C1 has no DPP_KAFKA_TOPIC (topics are fixed in C7/C8, spec row 14) |
+| 3 | Stopped testing after one run per failing check | D4 and D5 tell the developer to stop and return. A second functional-error run would only call the failing shared facade again, and more happy-path runs would add more produce attempts while the cause is unknown |
+| 4 | Deployments left in place in 1-DEV | Needed for the re-test after the design answers |
+| 5 | Local extension dumps deleted from active-development after the hash comparison | They contained a connection username value. Nothing about credential values is recorded here |
+
+## Deviations from spec
+
+None.
+
+## Deployments
+
+| Date | Environment | Classification | Component | Package ID | Notes |
+|------|-------------|----------------|-----------|------------|-------|
+| 2026-10-09 | 1-DEV (693e8bc2-46f8-4c7f-8259-8dcf6cf0f264) | development (user-confirmed) | C1 135044a4 v2 | 7d8121d2-647f-493d-a192-8d01219cd7c7 | Bridge mode. Replaces package 2cb065e7 (C1 v1). Bundles C7 v2, C8 v2 and C9 v1. The tool returns the package ID, not a deployment ID |
+
+C2 package d2229e66 (v1, unchanged) is still deployed and was not redeployed.
+
+## Temporary Notify shapes
+
+None added. Final C1 v2 has 0 Notify shapes.
+
+## Blocking items
+
+1. **D4 facade fails in 1-DEV** (spec D4: "If it fails ... stop and return to the orchestrator. Do not deploy or edit shared framework components"). The facade's Process Route target fails on the cache index key `DDP_MED_ProcessId`, which the spec does not tell C1 to set. The designer needs to decide which DDPs (for example `DDP_MED_ProcessId`, and possibly `DDP_MED_NS_Code` / `DDP_MED_NS_Level`, which the facade reads) C1 must set before the facade call, and their values, or whether the 1-DEV framework deployment is at fault. Evidence: execution 22c61363.
+2. **D5 wrong path reaches C1** (spec D5: "If the effective path differs, stop and return to the orchestrator"). `/ws/rest/gb-cg-leads/v1/leads/leads` started C1 (execution bcec584b), so the API Service route also matches a trailing extra segment.
+3. **Happy path does not complete and main-topic existence is unconfirmed** (spec "Topic existence": "If not, stop and return to the orchestrator"). Execution 93e06b38 exceeded the runtime's maximum execution time (about 30 s) with no response. The C7 error is not visible because the log download fails (curl exit 56). Also relevant to spec row 19: the runtime ended a listener execution at about 30-33 s, so the accepted worst case of "about 25 s plus the facade" is close to this runtime limit.
