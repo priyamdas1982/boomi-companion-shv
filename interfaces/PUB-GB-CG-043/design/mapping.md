@@ -1,5 +1,7 @@
 # Field mapping: PUB-GB-CG-043
 
+Revision 8 (2026-10-09, user: "if facade fails, throw an exception. unhandled."). No field rule changes. Only the response note for a facade failure changes: the facade Process Calls are wait = true, abort = true (spec row 28), so when the facade fails no C6 response is built; the execution fails unhandled and the caller gets the runtime's default 500 (not JSON). R1 and R2 apply only to responses C1 builds. On the functional-error path the exact outcome of a facade failure depends on spec open question 1 (row 29). No `OPEN` rows in this file.
+
 Revision 7, third pass (2026-10-09, user: "1a 2a 3-8: a"). No `OPEN` rows remain. The 500 `message` carries the full exception text as is (user "2a"); for a Kafka failure it reads `... failed after 3 attempts: ...` (3 attempts, user "1a"). FI-10 to FI-15 are not set (user "3-8: a"). No field rule for the request or the Kafka message changes.
 
 Revision 7, second pass (2026-10-09). Changes: the Kafka message goes only to `gb-cg.q.leads.in.insert`; nothing is sent to `gb-cg.q.leads.in.retry` any more (user: "if kafka fails, try 3 times. throw exception. return exception to api consumer.  handled or unhandled."; CLAUDE.md "Kafka send failures"). The 500 response `message` now carries the exception text instead of a fixed text, built by script S2 with JSON escaping (R2; data exposure is spec open question 2). FI-9 `DDP_MED_NS_Level` is closed as "leave unset" (user: "4. a"). FI-10 to FI-15 are still `OPEN`, now spec questions 3 to 8. The request pass-through rows and the header/key rows are unchanged.
@@ -65,7 +67,7 @@ Corrected sample (test payload and profile source):
 
 ## Response: WSS output -> APIM / Sitecore
 
-Response profile: `PUB-GB-CG-043 Lead Response JSON` (C6). Built by Message steps; the HTTP status is set per outcome (spec, "HTTP response per outcome").
+Response profile: `PUB-GB-CG-043 Lead Response JSON` (C6). Built by Message steps; the HTTP status is set per outcome (spec, "HTTP response per outcome"). Revision 8: when the facade fails, C1 builds no response (unhandled failure, runtime default 500; spec row 28), so these rows do not apply to that case.
 
 | # | Source | Target field / path | Transformation / rule | Required | Example |
 |---|--------|---------------------|-----------------------|----------|---------|
