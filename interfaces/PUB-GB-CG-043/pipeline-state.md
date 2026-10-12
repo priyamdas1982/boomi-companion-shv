@@ -23,7 +23,7 @@ Written only by the `/build-interface` orchestrator.
 
 ## Status
 
-- Open findings: 0 blocker, 0 major, 1 minor (F-2-01, spec wording; round 2). F-1R-01, F-1R-02 closed. D-1-01 closed by user decision (row 31).
+- Open findings: 0 blocker, 0 major, 0 minor (round 3). All findings closed: F-1-01, F-1-02, F-1-03, F-1R-01, F-1R-02, F-2-01. D-1-01 closed by user decision (row 31).
 - Disputed findings: none
 - Last test result: round 2 (2026-10-12): 10 PASS, 4 FAIL (TC-08, TC-09, TC-11, TC-12: D-2-01 minor, spec says empty body, runtime returns default HTML error page with the error reason), 3 NOT RUN (TC-13, TC-14, TC-15), 10 PARTLY VERIFIED. No temporary Notify.
 
