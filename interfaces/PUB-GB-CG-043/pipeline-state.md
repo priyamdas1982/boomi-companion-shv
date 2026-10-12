@@ -23,7 +23,7 @@ Written only by the `/build-interface` orchestrator.
 
 ## Status
 
-- Open findings: 0 blocker, 0 major, 0 minor pending round 2 review (F-1R-01, F-1R-02 addressed in spec revision 10; D-1-01 closed by user decision, row 31)
+- Open findings: 0 blocker, 0 major, 1 minor (F-2-01, spec wording; round 2). F-1R-01, F-1R-02 closed. D-1-01 closed by user decision (row 31).
 - Disputed findings: none
 - Last test result: round 1 (2026-10-12): 8 PASS, 5 FAIL (TC-08, TC-09, TC-11, TC-12, TC-23), 3 NOT RUN (TC-13, TC-14, TC-15), 8 PARTLY VERIFIED; open defect D-1-01 (major). No temporary Notify.
 

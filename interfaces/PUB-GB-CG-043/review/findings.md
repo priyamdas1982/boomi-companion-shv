@@ -148,3 +148,79 @@ Other points checked since Round 1, with no finding:
 | R7 | PASS | The only Stop is shape31 on the success branch. Error paths end in Return Documents with 400 or 500 and the error text, or in the Exception that flows to TC-A. Both facade calls have `abort="true"` |
 | R8 | PASS | shape1 -> shape3 -> shape4, with no Try/Catch before them. True -> shape2, False -> shape14 (not in TC-A scope). No Try/Catch encloses shape16 BR-F or shape22 BR-A. 3 Try/Catch. shape6 is the only Kafka step, inside TC-T inside TC-A |
 | R9 | PASS | shape30 `shapetype="branch" numBranches="2"`, dragpoints 1 and 2 both wired. 1 -> shape6 -> shape31 `<stop continue="true"/>`. 2 -> shape7 -> shape8 -> shape9. It is the first shape after shape5's Try. No Decision, process property or script was added. The build log records V9 (documentation) and D8 (04e4af6d, 202 in 2.31 s). The failure leg is review only (F-1R-02) |
+
+## Round 2
+
+Reviewed 2026-10-12 against spec revision 10 (`design/spec.md`, `design/mapping.md`; third pass). Hash recomputed from the repo root with the pipeline method (`sha256sum interfaces/PUB-GB-CG-043/design/spec.md interfaces/PUB-GB-CG-043/design/mapping.md | sha256sum`): 31bb19b997598766015ae0f3b66bf761a1e6eca0692beb7083e290c30d02c293, which matches `pipeline-state.md`. Also reviewed: the XML in `build/components/`, `build/build-log.md` (last entry Attempt 8; revision 10 has no developer run, D9), `build/fix-response.md`, `test/test-report.md` Round 1 (SHP-01 and ENV-01 only), `.claude/review-checklist.md`, spec review items R1 to R10, and CLAUDE.md.
+
+Platform cross-check, read only. `boomi-version-history.sh`: C1 135044a4 v4, C2 4c878feb v2, C3 0f214069 v1, C5 27f55bec v1, C6 f07edecd v1, C7 583b0437 v3 and C8 be398af2 v2 are the current versions on main. C4 c85b494e is still v9 and C9 338df4f8 is still v1. All seven interface components were pulled with `boomi-component-pull.sh` to a scratch path outside `interfaces/`, and `cmp` shows each is byte-identical to its file in `build/components/`. `boomi-component-search.sh` puts C9 in folderId RjoyOTg5MzY4, and `boomi-folder-list.sh` shows that folder's child as `.../01-Facade/02-Process/UnitTest`, which confirms RjoyOTg5MzY4 is `.../01-Facade/02-Process`. The deployment under review is unchanged: C1 v4, C2 v2, C3 v1, C5 v1, C6 v1, C7 v3, with C8 v2 present and unreferenced (0 occurrences of `be398af2` in C1).
+
+### Earlier findings re-checked
+
+| ID | Severity | Rule / spec line | Component | Evidence | Status |
+|----|----------|------------------|-----------|----------|--------|
+| F-1R-01 | minor | SPC-03; spec.md: "Failure-path test approach" options A and C, "Error handling" intro, header Status | `design/spec.md` (no component) | Option A now describes the current Kafka failure path ("3 failed C7 attempts ... BR-K branch 2 ("Response 202") does not run ... 500 ... never a 202; no C8 step"). The revision 5 text is marked "*History (revision 5 text, superseded ...; do not use as expectations)*". Option C says "Current behaviour (revisions 7 to 10) ... TC-T retry count **2**", and the old text is marked "*History ... Not current*". The Error handling intro says "The three Branch shapes (BR-F and BR-A ... BR-K from revision 9)". Line 5 explains that approval is recorded only in `pipeline-state.md`. Fix verified. | CLOSED |
+| F-1R-02 | minor | SPC-03; CLAUDE.md SHV Energy build rules > Kafka send failures; spec.md: Follow-ups F2 | C1 BR-K `shape30` | F2 now reads "**Also open (revision 10, review F-1R-02): V9: BR-K branch 2 does not run on a failed C7 attempt.** ... The F2 run must show that "Response 202" did not run in any failed attempt and that the caller got the 500, never a 202." Option A and the Test notes "Kafka failure" row repeat the V9 expectation. Fix verified. The runtime proof itself is still open under F2, and the user accepted that (row 16). | CLOSED |
+
+### Findings (Round 2)
+
+| ID | Severity | Rule / spec line | Component | Evidence | Status |
+|----|----------|------------------|-----------|----------|--------|
+| F-2-01 | minor | SPC-03 (spec conformance); spec.md: D7 "Revision 10" sentence, "Error handling" > Definitions "Functional error" | `design/spec.md` (no component) | Two first-pass and second-pass sentences in current-rule sections contradict the final revision 10. (1) D7: "**Revision 10:** C7 v3 is not changed at all ...; only C3's tracking changes (D9)". This conflicts with D9, R10 and row 9 (C3 v1 unchanged, tracking on both). (2) Definitions: "Whether a missing or empty `email` becomes a functional error is open question 2 (row 32)". Row 32 is closed (option a), and "Open questions" says "None". The precedence notes on lines 9 and 11 ("the second pass wins", "the third pass wins") resolve both, and the build matches the final text (C3 v1 and C7 v3 identical on the platform), so no build change is needed. The risk is that the tester, who is writing cases in parallel, reads either sentence literally. **Design change (wording only):** in D7, drop "only C3's tracking changes (D9)" or replace it with "C3 is not changed either (D9)". In Definitions, replace the open-question clause with "A missing or empty `email` is not a functional error (row 32, option a)". | OPEN |
+
+Open: 0 blocker, 0 major, 1 minor. Disputed: 0.
+
+**Test defect D-1-01.** Closed by the user's decision (spec row 31, user: "email is mandatory. So, keep it on both"), not by a build change. As R10 requires, it is not raised as a finding.
+
+**CLAUDE.md conformance of the accepted behaviour (row 31 and row 32).** No conflict found:
+
+- *Kafka send failures*: an empty, whitespace-only, array or string body fails in the Start shape (C3 `primaryvalue` profile parse), before S1 and before any Kafka step. No send is attempted, so the rule's 3-attempt case does not arise. The caller gets HTTP 500, an error and never a success. The empty body (no error text) is the user's recorded decision (row 31). C1 has no path that returns 202 after a failed send: the only 202 is on BR-K branch 2 (shape30 dragpoint 2 -> shape7 -> shape8 -> shape9), and C7 (shape6) is only on dragpoint 1, inside TC-T inside TC-A.
+- *Cache Notification Facade*: on the row 31 path nothing is sent and no Try/Catch message exists, so no call is due. On every designed error path the facade is still called after `DDP_MED_NS_Msg` is set (CNF-01, CNF-02).
+- *Error handling*: 3 Try/Catch, unchanged. No Try/Catch can enclose a Start shape, so the row 31 failure cannot be caught without a component change, which the user declined.
+- *Tracking fields*: `email` is used in the connectors C3 and C7 (TRK-02).
+- *Data validation*: row 32 (no email check) agrees with requirements section 1.2.1. No script changed (S1 and S2 are the same bytes as in C1 v4).
+
+### Checklist results
+
+| Item | Result | Note |
+|------|--------|------|
+| NAM-01 | PASS | `name="[Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG]"` (C1 v4, platform byte-identical) |
+| NAM-02 | PASS | Publisher: Source application `Customer Portal`, Source BU `GB-CG`, no target segments |
+| NAM-03 | PASS | shape1 WSS Listen (C3). Kafka PRODUCE to `gb-cg.q.leads.in.insert` (shape6, C7) |
+| NAM-04 | PASS | Equals spec row 10 character for character |
+| NAM-05 | PASS | Unchanged in revision 10. Every value comes from the user or CLAUDE.md |
+| IID-01 | PASS | `PUB-GB-CG-043` |
+| IID-02 | PASS | `PUB` = Publisher |
+| IID-03 | PASS | `043` from the user's design document (row 2) |
+| BU-01 | PASS | Only `GB-CG` |
+| FLD-01 | PASS | `folderFullPath=".../GB-CG/Enterprise Projects/Customer Portal/Publisher/PUB-GB-CG-043-Lead"`, folderId Rjo4ODkxNDA5, equals row 11 (the sandbox prefix is the user's choice) |
+| FLD-02 | PASS | `Enterprise Projects` |
+| FLD-03 | PASS | `Customer Portal`, the user's explicit choice (follow-up A), recorded as a deviation from the hint. Unchanged |
+| ERR-01 | PASS | 3 x `shapetype="catcherrors"` |
+| ERR-02 | PASS | Exactly 3 (`retryCount` 0 / 2 / 0, all `catchAll="true"`). Revision 10 adds no shape |
+| DEP-01 | PASS | `<process ... allowSimultaneous="true" ... workload="bridge">` |
+| DEP-02 | N/A | No queue listener. The start shape is WSS |
+| SHP-01 | PASS | 0 `shapetype="notify"` in C1 v4. Test report Round 1 "Temporary Notify shapes": none |
+| SCR-01 | PASS | S1 only classifies the body, and S2 only builds the 500 body. Unchanged (row 32: no email check added) |
+| SCR-02 | PASS | S1 is about 25 lines and S2 about 16 lines, with no nesting. Unchanged |
+| TRK-01 | PASS | Row 9: `email` (user Q7), on C3 and C7 (user: "keep it on both") |
+| TRK-02 | PASS | C3 v1 and C7 v3: `TrackedField fieldId="33185" fieldName="primarykey"` with `valueType="static"` `staticproperty="Email"`, and `fieldId="33186" fieldName="primaryvalue"` with `valueType="profile"`, profileId 27f55bec, elementId 6 `email (Root/Object/email)` |
+| CNF-01 | PASS | shape18 and shape24: `processcall processId="338df4f8-af86-44f9-855c-943d8d0d478f" wait="true" abort="true"`. C9 v1 is in RjoyOTg5MzY4 `.../01-Facade/02-Process` (platform search, this round) |
+| CNF-02 | PASS | shape17 and shape23 set `DDP_MED_NS_Msg` = `meta.base.catcherrorsmessage` first, then FI-2 to FI-8 |
+| EXT-01 | PASS | One `ConnectionOverride id="c85b494e-..."` with 9 fields, each with `xpath`. `consumer_group` is uncovered by the approved exception (row 20) |
+| EXT-02 | PASS | The only Listen operation is C3 (API contract fields, no platform-generated override to copy). C7 is PRODUCE, which is exempt. 0 `OperationOverride` |
+| EXT-03 | PASS | No host, URL or credential in C1, C2, C3 or C7. Topic and producer settings are fixed under the CLAUDE.md exception |
+| ENV-01 | PASS | Build log: no deployment since Attempt 8 (1-DEV only). Test report Round 1: 1-DEV (693e8bc2) only, "No production environment was touched" |
+| SPC-01 | PASS | C1, C2, C3, C5, C6 and C7 are present. C8 is present and unreferenced (F4). C4 and C9 are reused, not pulled |
+| SPC-02 | PASS | Pass-through with no map (rows 1 to 10). H1/H2 none. R1/R2 as in mapping.md. FI-1 to FI-15 as tabled. Mapping row 4 (Required = N, tracked on C3 and C7) matches the XML |
+| SPC-03 | PASS | No deviations. The build log has no revision 10 entry, as D9 says. The spec wording item is raised as F-2-01 (minor, design wording) |
+| R1 | PASS | shape5 `catchAll="true" retryCount="2"`, Try -> shape30 BR-K. Nothing wired from shape6 to shape7. C7 `operation_timeout` `3000` |
+| R2 | PASS | TC-T catch -> shape28 Exception only (`stopsingledoc="true"`, message `Kafka send to gb-cg.q.leads.in.insert failed after 3 attempts: {1}`). 0 references to be398af2 |
+| R3 | PASS (structure) | TC-T and its catch path sit on TC-A's try path. Runtime is unconfirmed (V1, F2) |
+| R4 | PASS | TC-A `retryCount="0"` on Decision True. Catch -> BR-A `numBranches="2"`, both dragpoints wired |
+| R5 | PASS | "Set facade inputs" (FI-1, then FI-2 to FI-8, no FI-9 to FI-15) -> C9 call with `wait="true" abort="true"`, no return paths, no shape around it |
+| R6 | PASS (structure) | "Response 500" (500 + `DDP_ERROR_MESSAGE`) -> S2 JsonOutput -> Return Documents "Error". Runtime is unconfirmed (V6 for BR-A, F3) |
+| R7 | PASS | Only one Stop (`<stop continue="true"/>`, success branch). Both facade calls `abort="true"`. Row 31 behaviour is the user's accepted exception and is not a finding |
+| R8 | PASS | Start -> S1 -> Decision, outside every Try/Catch. True -> TC-A, False -> TC-F. 3 Try/Catch. C7 inside TC-T inside TC-A |
+| R9 | PASS | BR-K `numBranches="2"`. 1 -> C7 -> Stop `continue="true"`. 2 -> Response 202 -> Accepted -> Return Documents "Accepted". First shape after TC-T's Try |
+| R10 | PASS | C3 v1 and C7 v3 both have `primarykey` static `Email` and `primaryvalue` profile 27f55bec element 6 `email`. No component changed (all seven are byte-identical to the platform's current versions, and those versions equal the round 1 deployment C1 v4, C2 v2, C3 v1, C7 v3). No Try/Catch, script or Notify was added for D-1-01. D-1-01 is not raised. The changed rows 9, 31 and 32 are consistent with the XML and with CLAUDE.md (see above). The one wording inconsistency left is F-2-01 |
