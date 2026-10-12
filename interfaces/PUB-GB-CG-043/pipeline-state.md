@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: design feedback loop (2026-10-12). Round 1 test execution done: 8 pass, 5 fail, 3 not run, 8 partly verified. Defect D-1-01 (major): empty, whitespace, JSON array and JSON string bodies get HTTP 500 empty body because the WSS start fails reading the C3 tracked field primaryvalue (email) before S1; facade not called. Fix changes the spec (row 9 tracking on C3) -> designer for revision 10, then user re-approval, then round 2.
+- Step: 1 - designer revision 10 DRAFT - OPEN QUESTIONS (2026-10-12): Q1 where the tracking field email is recorded (C7 only vs C3 and C7), for defect D-1-01. Put to the user. C1 v4 in 1-DEV.
 - Round: 1 / 3
 - Spec approved: yes (user: "i approve", revision 9)
 - Spec approved on: 2026-10-12 (revision 9; earlier approvals superseded)
