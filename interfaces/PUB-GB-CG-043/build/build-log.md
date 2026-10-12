@@ -552,3 +552,105 @@ The tool returns package IDs, not deployment IDs. No production environment was 
 ## Temporary Notify shapes
 
 None added. C1 v3 has 0 Notify shapes.
+
+---
+
+# Attempt 8 / revision 9 (round 1 fix, 2026-10-12)
+
+Spec: revision 9, approved by the user 2026-10-12 ("i approve"). Hash recomputed from the repo root: 449c119cc3d76fcd3edf91e564459ba629abcfaf2cadbbceab6488b32a917078 (matches pipeline-state.md). Required values: none OPEN. Kafka topic gate: `gb-cg.q.leads.in.insert` is recorded under "Kafka topics confirmed" (passed).
+
+Status: **FIXED.** BR-K "Send then accept" built as spec row 30 / process design step 4, C1 pushed (v4) and redeployed to 1-DEV in bridge mode. D8 passes (HTTP 202 `{"status":"accepted"}` in 2.31 s, log order as specified). D4 (400) and D5 (`/leads/leads` 404, no C1 execution) re-confirmed after the redeploy. V9 documentation lookup recorded below; no source contradicts the design.
+
+## D0 connectivity checks (all passed)
+
+| Check | Result |
+|-------|--------|
+| `boomi-env-check.sh` | Ran; lists no variables because the project `.env` is empty. The by-name check below is the env check result (accepted by the user, spec D0) |
+| Platform variables (by name) | BOOMI_API_URL, BOOMI_USERNAME, BOOMI_API_TOKEN, BOOMI_ACCOUNT_ID, BOOMI_ENVIRONMENT_ID, BOOMI_TEST_ATOM_ID, BOOMI_VERIFY_SSL, BOOMI_TARGET_FOLDER: SET |
+| `boomi-folder-create.sh --test-connection` | Passed (account shvenergynv-6R344K). No auth error |
+| Runtime endpoint credentials | SERVER_AUTH_TYPE SET, SERVER_USERNAME SET, SERVER_TOKEN SET, SERVER_BEARER_TOKEN EMPTY (SERVER_BASE_URL SET, SERVER_VERIFY_SSL SET) |
+| `platform.boomi.com` | HTTP 200 |
+| `api.boomi.com` | HTTP 200 |
+| `shv-energy-test.boomi.cloud` (1-DEV runtime) | Reachable (HTTP 404 at `/`, so the server answered) |
+| `help.boomi.com` | HTTP 200 (curl through the proxy) |
+| `developer.boomi.com` | HTTP 200 (`/llms.txt`) |
+
+## V9 documentation check (passed: no contradiction)
+
+Sources read 2026-10-12 (help.boomi.com, curl through the proxy):
+
+1. "Branch step" (updated 16 July 2026): https://help.boomi.com/docs/Atomsphere/Integration/Process%20building/r-atm-Branch_shape_83d94692-c1c3-4ad6-a6e6-50ee0e48c495
+   - "Each branch consists of a separate path that is executed in sequential order. A branch's path is executed to completion before executing the next branch."
+   - "Each branch receives a full copy of every document that enters the Branch step. Boomi Integration doesn't divide or split incoming documents across branches — every path processes the complete set of documents independently, in the order the branches run."
+   - What happens to a document that fails on one branch inside a Try/Catch: **not stated**. The "full copy" sentence describes how documents are distributed (not split across branches); it does not address a document that has failed on an earlier branch, so it does not say a failed document is still passed to later branches. The runtime evidence the spec relies on (22c61363: branch 2 skipped with "No documents found" after the document failed on branch 1 under an enclosing Try/Catch) stands.
+2. "Try/Catch step" (updated 12 February 2026): https://help.boomi.com/docs/Atomsphere/Integration/Process%20building/r-atm-Try_Catch_shape_7b3dd8df-426e-4ed7-824a-40cc0b5dc68d
+   - "The Try and Catch paths are executed in separate execution threads. For any failed documents, the Try path is always executed first, followed by the Catch path." (supports the spec's "catch path runs only after the try path has finished")
+   - Retry: "specify the maximum number of times a failed document can retry through the main series of steps after the Try/Catch step." (consistent with retry re-running the try path from its first shape, now BR-K; no source says otherwise)
+   - Retry timing table: "1 Retry occurs immediately after the first failure. 2 Waits 10 seconds before retrying." Recorded for information only: this matches the 7-13 s gaps already observed in 93e06b38 and analysed in the spec (row 19); no change made.
+   - Always captured: "Connector errors for specific documents"; with All Errors (TC-T `catchAll="true"`) process-level errors too.
+3. "Kafka operation" (updated 10 September 2026): https://help.boomi.com/docs/Atomsphere/Integration/Connectors/int-Kafka_operation_ff62a8ee-12b1-425f-ae17-2d31e394bdba
+   - Whether a Produce outputs documents: **not stated**. (Runtime: "No documents found. Skipping execution for the Sent step." in 04e4af6d, as in 8bee26c5.)
+   - "Return Application Error Responses - ... If cleared, the process aborts and reports the error on the Process Reporting page. If selected, processing continues and passes the error response to the next component". C7 has `returnApplicationErrors="false"` (cleared), so a Kafka error is never passed on to Stop "Sent" as output; it fails on branch 1 and TC-T (All Errors) catches it. C7 not changed.
+4. "Stop step" (updated 1 August 2025): https://help.boomi.com/docs/Atomsphere/Integration/Process%20building/r-atm-Stop_shape_d4dda1a9-8687-4418-8a3d-afe5f9174bc1: "Continue processing other execution paths" selected = "End and continue" ... "The document(s) continue through the process." Cleared = "End and return" ... "The process stops when one document reaches this step." Matches `continue="true"` on Stop "Sent".
+5. Skill `BOOMI_THINKING.md` (Try-Catch Steps): "When a document errors, processing halts for that document - subsequent steps and parallel branches don't execute." Skill `try_catch_step.md`: "Each retry attempt re-executes the entire try path from the beginning."
+
+Result: no source says a failed document is still passed to later branches, or that a retry does not re-run the try path from its first shape. Not stopped. No Kafka failure forced (row 16); none occurred naturally in this attempt.
+
+## Components (changed in this attempt)
+
+Folder: `SHV Energy N.V./01-Sandbox/01-Users/Priyam/BC/GB-CG/Enterprise Projects/Customer Portal/Publisher/PUB-GB-CG-043-Lead` (Rjo4ODkxNDA5). C1 v3 was current on main before editing (version history checked; freshly pulled v3 identical to `build/components/`).
+
+| # | Name | Type | Component ID | Version before -> after | Pulled XML |
+|---|------|------|--------------|-------------------------|------------|
+| C1 | [Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG] | process | 135044a4-ad21-4ba0-b4d7-5e5c21fac446 | 3 -> 4 | build/components/process/ (refreshed, v4) |
+
+Unchanged: C2 4c878feb v2 (current, not redeployed), C3 0f214069 v1, C5 27f55bec v1, C6 f07edecd v1, C7 583b0437 v3 (current; unchanged), C8 be398af2 v2 (unreferenced). Not touched: C4 c85b494e, C9 338df4f8 and its route targets. Their files in `build/components/` are unchanged and still match the platform.
+
+C1 v4 changes (spec row 30, process design step 4.2):
+
+- New Branch `shape30` "BR-K Send then accept", `numBranches="2"`, dragpoints identifier/text 1 and 2, both wired. TC-T (`shape5`) Try dragpoint now goes to `shape30` (was C7 `shape6`).
+- Branch 1: `shape6` C7 produce (moved right, x 1392) -> new Stop `shape31` "Sent" with `<stop continue="true"/>`. C7 no longer wired to "Response 202".
+- Branch 2: `shape7` "Response 202" -> `shape8` Message "Accepted" -> `shape9` Return Documents "Accepted" (configuration unchanged; moved to row y 208 only).
+- Description "spec rev 8" -> "spec rev 9" with a BR-K note. Nothing else changed: `processOverrides`, TC-T retry 2 / catch all, Exception "Kafka send failed", TC-A, BR-A, TC-F, BR-F, facade calls (wait true, abort true), S1, S2.
+- Final C1 v4 shape counts (pulled XML): catcherrors 3, branch 3 (BR-K, BR-A, BR-F), processcall 2, returndocuments 3, exception 2, decision 1, dataprocess 2, connectoraction 1 (C7), message 2, documentproperties 5, start 1, stop 1, **notify 0**. `workload="bridge"`. Every non-Start shape has exactly one inbound connection; no unset or dangling dragpoint. Matches the spec's revision 9 shape count summary and R9.
+
+## Decisions
+
+| # | Decision | Reason |
+|---|----------|--------|
+| 1 | New shape names `shape30` (BR-K) and `shape31` (Stop "Sent") | Unused names; existing shapes keep their names |
+| 2 | Branch 2 steps placed on row y 208 (x 1392-1840), right of Exception "Kafka send failed" (1168, 208) | Readable canvas; coordinates are cosmetic |
+| 3 | Base-path recheck done by component search (105 API Services, same count as Attempt 7) and modified-date filter: only C2 changed since the Attempt 7 full recheck | C2 not redeployed; D5 re-proven at runtime |
+
+## Deviations from spec
+
+None.
+
+## Deployments
+
+| Date | Environment | Classification | Component | Package ID | Notes |
+|------|-------------|----------------|-----------|------------|-------|
+| 2026-10-12 | 1-DEV (693e8bc2-46f8-4c7f-8259-8dcf6cf0f264) | development (user-confirmed; `--list-environments` lists it, BOOMI_ENVIRONMENT_ID equals it) | C1 135044a4 v4 | 0177fbd2-1a4b-4d49-9a6b-e2d85eb3b966 | Bridge mode (executions report `type=exec_listener_bridge`). Replaces c2d1fa6b (C1 v3). Bundles C7 v3 and C9 |
+
+C2 stays deployed as package 6a013563-d2e8-4ca6-a0f9-ff5b55986ce0 (v2). No production environment touched. No extension value set.
+
+## Developer checks (Attempt 8)
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| D0 | PASS | Above |
+| D1 Environment | PASS | 1-DEV only |
+| D3 Reused connection | PASS | C4 not edited or pushed |
+| D6.6 Extensions | PASS | sha256 of the 1-DEV c85b494e extension entry (values not displayed) 89488fd6...ef33 before and after the C1 v4 deploy, same as Attempt 7. `set` not run |
+| D7 | PASS | C7 v3 unchanged |
+| **D8 Happy path** | **PASS** | POST TC-01 sample lead to `https://shv-energy-test.boomi.cloud/ws/rest/gb-cg-leads/v1/leads` at 06:47:43Z: **HTTP 202, body `{"status":"accepted"}`, 2.31 s**. execution-04e4af6d-2ce5-4c36-9e30-ba0d412abbd3-2026.10.12 (COMPLETE, exec_listener_bridge). Log order: Start -> Check JSON body -> Body is valid JSON? -> TC-A -> TC-T -> "BR-K Send then accept: Executing Branch Shape with 1 document(s)" -> "Produce gb-cg.q.leads.in.insert ... Shape executed successfully in 199 ms." -> "No documents found. Skipping execution for the Sent step." -> "Response 202 ... with 1 document(s)" -> "Accepted" Message -> "Accepted: Adding 1 document(s) to Return Documents return store." -> "Process execution completed normally." C7 ran once. 0 WARNING/SEVERE lines; no TC-T or TC-A error path, no "Kafka send failed", no BR-A, no facade. The lead is expected on `gb-cg.q.leads.in.insert` (Boomi side only; topic now also holds the 8bee26c5 copy) |
+| D4 Facade / functional error | PASS | TC-10 malformed JSON at 06:48:17Z: HTTP 400 `{"status":"rejected","message":"Functional error: request body is not valid JSON"}` in 1.71 s. execution-22292eff-5ce3-4084-9936-457d0de6404a-2026.10.12. Log: TC-F -> Functional error -> TC-F error path -> BR-F -> facade -> Process Route CACHE_NOTIFICATION -> "Document Cache Load: Shape executed successfully in 80 ms." -> Response 400 -> Rejected -> Return Documents "Rejected - functional error" |
+| D5 Exact `/leads` | PASS | POST TC-03 payload to `/ws/rest/gb-cg-leads/v1/leads/leads` at 06:48:18Z: **HTTP 404** in 0.94 s. C1 executions since 06:40Z queried at 06:48:46Z and 06:49:11Z: only 04e4af6d and 22292eff, so no C1 execution for the `/leads/leads` call |
+| V9 | PASS (documentation; review) | Above. Runtime part (no 202 on a failed attempt) not testable without a natural Kafka failure (row 16) |
+| R9 wiring | PASS (self-check) | See "Components" |
+| 0 Notify shapes | PASS | Pulled C1 v4: 0 `shapetype="notify"` |
+| Kafka failure path, TC-15, facade failure | Not run | User test decisions |
+
+## Temporary Notify shapes
+
+None added. C1 v4 has 0 Notify shapes.

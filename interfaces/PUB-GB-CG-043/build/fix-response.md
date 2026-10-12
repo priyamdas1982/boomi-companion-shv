@@ -38,3 +38,20 @@ Status: **BLOCKED: spec cannot be built as written (D8 happy path).** All revisi
 | D8 happy path | BLOCKED | C1 v3 | Produce succeeded (336 ms), then "No documents found. Skipping execution for the Response 202 step."; caller got HTTP 200 with an empty body instead of 202 `{"status":"accepted"}`. Needs the designer (spec process design step 4) |
 
 FIXED: 2 (F-1-01, F-1-03). DISPUTED: 0.
+
+## Round 1, revision 9
+
+Built against spec revision 9 (hash 449c119cc3d76fcd3edf91e564459ba629abcfaf2cadbbceab6488b32a917078). Details and evidence: `build/build-log.md`, "Attempt 8 / revision 9".
+
+Status: **FIXED.** The revision 8 D8 blocker is resolved by BR-K (spec row 30). C1 v4 deployed to 1-DEV (package 0177fbd2-1a4b-4d49-9a6b-e2d85eb3b966, bridge mode).
+
+| Finding / item | Response | Component and new version | Change or reason |
+|----------------|----------|---------------------------|------------------|
+| D8 happy path (Attempt 7 BLOCKED) | FIXED | C1 135044a4 v4 | Branch BR-K "Send then accept" first on the TC-T try path: branch 1 C7 -> Stop "Sent" (`continue="true"`); branch 2 Response 202 -> Accepted -> Return Documents "Accepted". Runtime 04e4af6d: HTTP 202 `{"status":"accepted"}` in 2.31 s, C7 once, no error path |
+| V9 (rev 9) | DONE | - | help.boomi.com Branch, Try/Catch, Kafka operation and Stop pages read; quotes or "not stated" in the build log; no contradiction |
+| F-1-01 (blocker) | FIXED (unchanged) | C1 v4 | `processOverrides` carried over unchanged; 1-DEV c85b494e extension hash unchanged before and after the deploy |
+| F-1-02 (minor) | NO CHANGE | C7 583b0437 v3 | Unchanged |
+| F-1-03 (minor) | FIXED (unchanged) | C7 583b0437 v3 | Unchanged (`operation_timeout` 3000) |
+| D4 / D5 re-confirmed | PASS | C1 v4, C2 v2 | 400 for invalid JSON (22292eff); `/leads/leads` 404 with no C1 execution |
+
+FIXED: 1 new this round (D8 / revision 9), with F-1-01 and F-1-03 carried as fixed. DISPUTED: 0.

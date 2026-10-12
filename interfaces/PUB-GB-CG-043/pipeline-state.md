@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 4 - developer fix mode against approved revision 9 (round 1). Next: re-review (reviewer) and test execution (tester) in 1-DEV.
+- Step: 3 - round 1 re-review (reviewer) and test case rewrite (tester write-cases, spec changed) in parallel, then step 5 test execution. Developer revision 9 FIXED 2026-10-12: C1 v4 deployed to 1-DEV (package 0177fbd2-1a4b-4d49-9a6b-e2d85eb3b966). D8 PASS (04e4af6d, 202), D4 PASS (22292eff, 400), D5 PASS (404).
 - Round: 1 / 3
 - Spec approved: yes (user: "i approve", revision 9)
 - Spec approved on: 2026-10-12 (revision 9; earlier approvals superseded)
@@ -13,7 +13,7 @@ Written only by the `/build-interface` orchestrator.
 
 | Name | Type | Component ID | Version |
 |------|------|--------------|---------|
-| [Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG] | process | 135044a4-ad21-4ba0-b4d7-5e5c21fac446 | 3 |
+| [Publisher]-[PUB-GB-CG-043]-[Lead]-[Customer Portal]-[GB-CG] | process | 135044a4-ad21-4ba0-b4d7-5e5c21fac446 | 4 |
 | PUB-GB-CG-043 Lead API | webservice | 4c878feb-2bc3-42f1-9ef5-06cea4a18529 | 2 |
 | PUB-GB-CG-043 WSS Listen Lead | connector-action (wss) | 0f214069-c48d-4633-b60d-189e21dec918 | 1 |
 | PUB-GB-CG-043 Lead Request JSON | profile.json | 27f55bec-bae3-4465-87cc-ad9a8944e71d | 1 |
