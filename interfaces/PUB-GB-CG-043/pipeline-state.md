@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 3 - round 1 re-review (reviewer) and test case rewrite (tester write-cases, spec changed) in parallel, then step 5 test execution. Developer revision 9 FIXED 2026-10-12: C1 v4 deployed to 1-DEV (package 0177fbd2-1a4b-4d49-9a6b-e2d85eb3b966). D8 PASS (04e4af6d, 202), D4 PASS (22292eff, 400), D5 PASS (404).
+- Step: 5 - test execution (tester, execute mode, round 1) in 1-DEV. Round 1 re-review 2026-10-12: F-1-01, F-1-02, F-1-03 CLOSED; new F-1R-01, F-1R-02 minor (spec wording only, stay open for the summary per the pipeline). 0 blocker, 0 major.
 - Round: 1 / 3
 - Spec approved: yes (user: "i approve", revision 9)
 - Spec approved on: 2026-10-12 (revision 9; earlier approvals superseded)
@@ -23,8 +23,8 @@ Written only by the `/build-interface` orchestrator.
 
 ## Status
 
-- Open findings: round 1 fixes applied (F-1-01, F-1-03 fixed; F-1-02 no build change), pending re-review. Developer checks blocked: D4, D5, happy path
-- Disputed findings:
+- Open findings: 0 blocker, 0 major, 2 minor (F-1R-01, F-1R-02; round 1 re-review)
+- Disputed findings: none
 - Last test result: none yet (tester). Developer checks 2026-10-09: D4 PASS (c147f75b, 400), D5 PASS (/leads/leads 404), D8 FAIL (8bee26c5, 200 empty body). Earlier (developer checks only: executions bcec584b (wrong path), 93e06b38 (happy path, timeout), 22c61363 (malformed JSON, facade error), all 2026.10.09)
 
 ## User rulings
