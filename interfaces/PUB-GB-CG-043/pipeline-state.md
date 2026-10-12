@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1 - designer revision 10 DRAFT - OPEN QUESTIONS (2026-10-12): Q1 where the tracking field email is recorded (C7 only vs C3 and C7), for defect D-1-01. Put to the user. C1 v4 in 1-DEV.
+- Step: 1 - designer revision 10 (second pass) DRAFT - OPEN QUESTIONS (2026-10-12): Q2 whether a missing or empty email is rejected with 400 (row 32). Row 9 kept on C3 and C7; D-1-01 behaviour accepted as row 31. Put to the user.
 - Round: 1 / 3
 - Spec approved: yes (user: "i approve", revision 9)
 - Spec approved on: 2026-10-12 (revision 9; earlier approvals superseded)
