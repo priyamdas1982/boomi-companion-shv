@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 5 - test execution (tester, execute mode, round 1) in 1-DEV. Round 1 re-review 2026-10-12: F-1-01, F-1-02, F-1-03 CLOSED; new F-1R-01, F-1R-02 minor (spec wording only, stay open for the summary per the pipeline). 0 blocker, 0 major.
+- Step: design feedback loop (2026-10-12). Round 1 test execution done: 8 pass, 5 fail, 3 not run, 8 partly verified. Defect D-1-01 (major): empty, whitespace, JSON array and JSON string bodies get HTTP 500 empty body because the WSS start fails reading the C3 tracked field primaryvalue (email) before S1; facade not called. Fix changes the spec (row 9 tracking on C3) -> designer for revision 10, then user re-approval, then round 2.
 - Round: 1 / 3
 - Spec approved: yes (user: "i approve", revision 9)
 - Spec approved on: 2026-10-12 (revision 9; earlier approvals superseded)
@@ -25,7 +25,7 @@ Written only by the `/build-interface` orchestrator.
 
 - Open findings: 0 blocker, 0 major, 2 minor (F-1R-01, F-1R-02; round 1 re-review)
 - Disputed findings: none
-- Last test result: none yet (tester). Developer checks 2026-10-09: D4 PASS (c147f75b, 400), D5 PASS (/leads/leads 404), D8 FAIL (8bee26c5, 200 empty body). Earlier (developer checks only: executions bcec584b (wrong path), 93e06b38 (happy path, timeout), 22c61363 (malformed JSON, facade error), all 2026.10.09)
+- Last test result: round 1 (2026-10-12): 8 PASS, 5 FAIL (TC-08, TC-09, TC-11, TC-12, TC-23), 3 NOT RUN (TC-13, TC-14, TC-15), 8 PARTLY VERIFIED; open defect D-1-01 (major). No temporary Notify.
 
 ## User rulings
 
