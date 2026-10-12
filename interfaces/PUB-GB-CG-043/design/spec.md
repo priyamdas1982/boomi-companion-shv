@@ -1,12 +1,22 @@
 # Design spec: PUB-GB-CG-043
 
-Status: DRAFT - OPEN QUESTIONS
+Status: READY FOR APPROVAL
 
 This status line describes this revision only. The designer never marks the spec approved; the orchestrator records each approval in `interfaces/PUB-GB-CG-043/pipeline-state.md` (review F-1R-01). Revision 9 was approved there; revision 10 is not yet approved.
 
 **Revision 10 (round 1 -> 2 design feedback loop, 2026-10-12).** Starts from approved revision 9. It answers test defect **D-1-01** (major; `interfaces/PUB-GB-CG-043/test/test-report.md`, "Round 1") and the two minor review findings **F-1R-01** and **F-1R-02** (`interfaces/PUB-GB-CG-043/review/findings.md`, "Round 1 re-review (revision 9)"). Everything not listed under "Changes in revision 10" is unchanged from revision 9.
 
 **Revision 10, second pass (2026-10-12).** Applies the user's answer to revision 10 question 1, relayed verbatim by the orchestrator: **"email is mandatory. So, keep it on both"** (option b). The tracking field `email` stays on both C3 and C7, as built. The D-1-01 behaviour becomes the accepted behaviour by the user's decision. The first-pass fix (C3 with no tracked fields, D9 runtime 400 check) is withdrawn. The user's reason "email is mandatory" may also mean a request without `email` must be rejected; that is not assumed and is open question 2. Where the first-pass text below differs from the second pass, the second pass wins.
+
+**Revision 10, third pass (2026-10-12).** Applies the user's instruction on question 2, relayed verbatim by the orchestrator: **"can you do this or not? Use all the boomi practoces and finish this"**. The orchestrator recorded this as the user delegating question 2 to the designer's recommendation, option a. Where the second-pass text differs, the third pass wins. No question is open, so this revision is ready for approval.
+
+## Changes in revision 10, third pass (question 2 delegated: option a)
+
+- **Row 32 closed: no email validation.** "Email is mandatory" means `email` is the tracking field, kept on C3 and C7 (row 9). No field is validated, in line with the design document (section 1.2.1, data validation outside integration scope). A JSON object with no `email`, with `"email": ""` or `"email": null`, or `{}` is still sent to `gb-cg.q.leads.in.insert` and gets 202, exactly as in revision 9 (TC-05, TC-06). Any rule about missing email belongs to the Salesforce side (SUB-GB-CG-043).
+- **No script change.** S1 stays as built. No shape, script or component changes in revision 10 at all.
+- **No developer run for revision 10.** D9 states this. The developer's only task, if the orchestrator runs the developer at all, is to confirm that nothing needs building; the tester re-runs against the current deployment (C1 v4, C2 v2, C3 v1, C7 v3) with the updated expectations.
+- **No `OPEN` remains** in `spec.md` or `mapping.md` (mapping row 4 Required = N).
+- Updated (third pass): Status; row 32; D9; S1 note; R10; Open questions; `mapping.md` revision 10 note and row 4.
 
 ## Changes in revision 10, second pass (answer "keep it on both")
 
