@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 3 - round 2: reviewer (spec revision 10) and tester write-cases in parallel, then tester execute. Revision 10 changes no component (D9: no developer run).
+- Step: round 2 done, not Done (4 FAIL on D-2-01). Round 3: designer fixes spec wording (D-2-01 response body is the runtime default HTML error page with the error reason, not empty; F-2-01), then reviewer and tester (TC-08, TC-09, TC-11, TC-12). No component change.
 - Round: 2 / 3
 - Spec approved: yes (user, 2026-10-12: "can you do this or not? Use all the boomi practoces and finish this", taken as approval of revision 10 with the recommended option a)
 - Spec approved on: 2026-10-12 (revision 10; earlier approvals superseded)
@@ -25,7 +25,7 @@ Written only by the `/build-interface` orchestrator.
 
 - Open findings: 0 blocker, 0 major, 1 minor (F-2-01, spec wording; round 2). F-1R-01, F-1R-02 closed. D-1-01 closed by user decision (row 31).
 - Disputed findings: none
-- Last test result: round 1 (2026-10-12): 8 PASS, 5 FAIL (TC-08, TC-09, TC-11, TC-12, TC-23), 3 NOT RUN (TC-13, TC-14, TC-15), 8 PARTLY VERIFIED; open defect D-1-01 (major). No temporary Notify.
+- Last test result: round 2 (2026-10-12): 10 PASS, 4 FAIL (TC-08, TC-09, TC-11, TC-12: D-2-01 minor, spec says empty body, runtime returns default HTML error page with the error reason), 3 NOT RUN (TC-13, TC-14, TC-15), 10 PARTLY VERIFIED. No temporary Notify.
 
 ## User rulings
 
