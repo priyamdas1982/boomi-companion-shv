@@ -2,7 +2,7 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 3/5 - round 3: reviewer and tester (re-mark and re-run TC-08, TC-09, TC-11, TC-12, TC-23) against spec revision 11 (wording only, no component change).
+- Step: FINISHED (2026-10-12). Round 3 done: 0 open findings; tests 14 PASS, 0 FAIL, 3 NOT RUN (TC-13, TC-14 review only; TC-15 user decision), 10 PARTLY VERIFIED (Boomi side only). Final Notify check: C1 v4 pulled read only, 0 Notify, bridge, 3 Try/Catch, identical to build/components.
 - Round: 3 / 3
 - Spec approved: yes (revision 11, wording only; under the user's 2026-10-12 instruction "can you do this or not? Use all the boomi practoces and finish this")
 - Spec approved on: 2026-10-12 (revision 11; earlier approvals superseded)
@@ -25,7 +25,7 @@ Written only by the `/build-interface` orchestrator.
 
 - Open findings: 0 blocker, 0 major, 0 minor (round 3). All findings closed: F-1-01, F-1-02, F-1-03, F-1R-01, F-1R-02, F-2-01. D-1-01 closed by user decision (row 31).
 - Disputed findings: none
-- Last test result: round 2 (2026-10-12): 10 PASS, 4 FAIL (TC-08, TC-09, TC-11, TC-12: D-2-01 minor, spec says empty body, runtime returns default HTML error page with the error reason), 3 NOT RUN (TC-13, TC-14, TC-15), 10 PARTLY VERIFIED. No temporary Notify.
+- Last test result: round 3 (2026-10-12): 14 PASS, 0 FAIL, 3 NOT RUN, 10 PARTLY VERIFIED; no open defects (D-1-01 closed by user decision, D-2-01 closed by spec revision 11). Executions: TC-01 20e02625, TC-08 9c60e7e0, TC-09 7a61a0fc, TC-10 9744a98d, TC-11 fa819dce, TC-12 d0d471f6. No temporary Notify.
 
 ## User rulings
 

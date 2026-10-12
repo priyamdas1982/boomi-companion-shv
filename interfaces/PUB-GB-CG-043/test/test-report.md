@@ -139,3 +139,92 @@ No temporary Notify shape was added in round 2. C1 v4 has no Notify shape (`shap
 ### Pre-production note (not a test case)
 
 Unchanged from round 1: the Azure APIM backend timeout for the operation that calls `/ws/rest/gb-cg-leads/v1/leads` should be at least 30 s before production (spec "Deployment note: APIM backend timeout"). Action for the user; nothing was changed in APIM.
+
+## Round 3
+
+- Date: 2026-10-12 (runs 08:05:56Z to 08:06:17Z; checks 08:04Z to 08:07Z). Final round.
+- Mode: write-cases update, then execute. Cases from `test/test-cases.md` updated for **spec revision 11** (wording only). Spec hash recomputed from the repo root (`sha256sum interfaces/PUB-GB-CG-043/design/spec.md interfaces/PUB-GB-CG-043/design/mapping.md | sha256sum`): `3984711dde544ab3e30a667b4e165991366697ed64cadef2f51e46c49094d113`, equal to `pipeline-state.md`.
+- Spec check: besides the TC-08, TC-09, TC-11, TC-12 body wording (D-2-01), revision 11 changes only wording: the two facade-failure rows (runtime default 500 is an HTML page, content on C1 v4 not verified; TC-14 text updated, still review only), F-2-01 (D7 clause, "Functional error" definition), the "Unhandled by design" definition, R10, history markers. No other expected result changed.
+- Connectivity: `boomi-folder-create.sh --test-connection` succeeded (no auth error). `boomi-env-check.sh` could not read `.env` directly in this session (its `grep .env` is blocked); the variables were instead checked by name only after the CLI's own `load_env`: all platform and runtime endpoint variables SET, `SERVER_BEARER_TOKEN` EMPTY (not used; basic auth). `BOOMI_ENVIRONMENT_ID` equals 693e8bc2-... and `SERVER_BASE_URL` equals the test endpoint host (compared without printing). No values printed or recorded.
+- Environment: `1-DEV` (693e8bc2-46f8-4c7f-8259-8dcf6cf0f264), listed by `boomi-deploy.sh --list-environments` (no classification field printed; user-confirmed development). No production environment touched.
+- Deployment under test, **not redeployed**: `boomi-version-history.sh --current` shows C1 135044a4 v4 (2026-10-12T06:46:45Z), C2 4c878feb v2, C3 0f214069 v1, C7 583b0437 v3, all `main`, current; equal to the deployment under test (C1 package 0177fbd2-1a4b-4d49-9a6b-e2d85eb3b966, C2 package 6a013563-d2e8-4ca6-a0f9-ff5b55986ce0). Runtime atom `MCS_NL-HM_DEV_1`, execution type `exec_listener_bridge`.
+- Endpoint: `POST https://shv-energy-test.boomi.cloud/ws/rest/gb-cg-leads/v1/leads` via `boomi-wss-test.sh` (auth from `.env`; no credential values printed or recorded).
+- **Content type:** `boomi-wss-test.sh` prints the status and the body, not the response headers; custom curl is not allowed (CLAUDE.md). The response `Content-Type` header is therefore not observable with the approved tool. Each 500 body is a complete HTML document that declares `<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>`; that declaration is recorded as the content type.
+- Runs this round: TC-08, TC-09, TC-11, TC-12 once each (full body captured for all four), plus one regression run each of TC-01 and TC-10. TC-23 re-evaluated. **All other cases carry forward their round 2 results unchanged** (not re-run): TC-02 to TC-07, TC-13 to TC-22, TC-24 to TC-26. TC-27 re-checked (versions above).
+- Nothing was changed: no push, no deploy, no extension `set`, no change to components, C4, C9 or its route targets. No Notify shape added. Raw client output in `active-development/feedback/round3/`, logs in `active-development/feedback/execution-results/`.
+- Test decisions unchanged: TC-13, TC-14 review only, never forced; TC-15 not run; no Kafka read access (Kafka checks partly verified, Boomi side only).
+
+### Results (cases run in round 3)
+
+All execution IDs end in `-2026.10.12`. Times are the client-side `--- HTTP <code> (<s>) ---` values.
+
+| Case | Payload | Execution ID | Environment | HTTP status, content type and body | Expected | Actual | Result | Defect |
+|------|---------|--------------|-------------|------------------------------------|----------|--------|--------|--------|
+| TC-01 (regression) | TC-01-happy-path-sample-lead.json | execution-20e02625-34c9-4101-94c4-9e4a187dbae8 | 1-DEV | 202 `{"status":"accepted"}` (1.15 s) | 202 within 5 s; COMPLETE; TC-A -> TC-T -> BR-K -> C7 once -> Stop "Sent" -> "Response 202" -> "Accepted" -> Return Documents; no catch, facade, BR-A, BR-F | Exactly as expected. COMPLETE. Start OK; S1 1 out; Decision; TC-A; TC-T; BR-K; "Produce gb-cg.q.leads.in.insert" executed successfully in 138 ms; "No documents found. Skipping execution for the Sent step."; "Response 202"; "Accepted"; Return Documents 1 document. No catch path, no Exception, no BR-A, no facade, no TC-F/BR-F | PARTLY VERIFIED (Kafka: Boomi side only) | - |
+| TC-08 | TC-08-empty-body.json (0 bytes) | execution-9c60e7e0-e07c-469c-9e9b-3f6302180b4e | 1-DEV | **500** (0.61 s); `text/html; charset=ISO-8859-1` (page meta); full body: `<title>Error 500 Failed tracking custom fields; Caused by: [Input ProfileLocation: Root; DocumentLocation: /Root]: Unable to create JSON files from data, the document may not be well-formed json</title>`, `<h2>HTTP ERROR 500</h2>`, "Problem accessing /ws/rest/gb-cg-leads/v1/leads. Reason:" `<pre>` same text, `</html>` | 500 runtime HTML error page (`text/html`) with the reason "Failed tracking custom fields; ... Unable to create JSON files from data ..."; not JSON, not empty; ERROR; no facade, TC-F/BR-F/TC-A/BR-A or Kafka; never 202 | As expected. Execution **ERROR**. Start shape "executed with errors"; S1 "Completed with 0 documents out"; "No documents found. Skipping execution for the Body is valid JSON? step."; SEVERE "First document failure: Failed tracking custom fields; Caused by: [Input ProfileLocation: Root; DocumentLocation: /Root]: Unable to create JSON files from data, the document may not be well-formed json". No TC-F, BR-F, facade, TC-A, BR-A or C7 step | PASS | - |
+| TC-09 | TC-09-whitespace-body.json (spaces and a tab, 7 bytes) | execution-7a61a0fc-3ef1-4254-8c14-ae713f5fc5c1 | 1-DEV | **500** (0.68 s); `text/html; charset=ISO-8859-1` (page meta); full body identical in form to TC-08, title and Reason "Failed tracking custom fields; Caused by: [Input ProfileLocation: Root; DocumentLocation: /Root]: Unable to create JSON files from data, the document may not be well-formed json" | As TC-08 | As expected: ERROR; Start shape errors; S1 0 out; same SEVERE; no TC-F, BR-F, facade, TC-A, BR-A, C7; not 202 | PASS | - |
+| TC-10 (regression) | TC-10-malformed-json-missing-comma.json | execution-9744a98d-8c64-44c8-8036-cbc1965dd2fe | 1-DEV | 400 `{"status":"rejected","message":"Functional error: request body is not valid JSON"}` (0.83 s) | 400 with that text; COMPLETE; S1 1 document; facade once incl. Document Cache Load; no Kafka; no TC-A/BR-A | As expected. COMPLETE. S1 1 out; Decision; TC-F; Exception "Functional error" -> "Try/Catch Shape sending 1 document(s) down error path"; BR-F; "Set facade inputs"; facade Process Call **once**; Process Route `CACHE_NOTIFICATION` -> `[MED] (sub) CACHE Notification` incl. "Document Cache Load" executed successfully, completed normally; no "Could not determine value for Index key"; "Response 400"; "Rejected"; Return Documents "Rejected - functional error". No C7, TC-A or BR-A | PASS | - |
+| TC-11 | TC-11-json-array.json | execution-fa819dce-dd64-465d-8b8c-492afc7b4725 | 1-DEV | **500** (0.65 s); `text/html; charset=ISO-8859-1` (page meta); full body: title and Reason "Failed tracking custom fields; Caused by: [Input ProfileLocation: Root/Object; DocumentLocation: /Root/Object]: Expected START_OBJECT, found START_ARRAY", `</html>` | As TC-08 with "... found START_ARRAY" | As expected: ERROR; Start shape errors; S1 0 out; SEVERE "... Expected START_OBJECT, found START_ARRAY"; no TC-F, BR-F, facade, TC-A, BR-A, C7; not 202 | PASS | - |
+| TC-12 | TC-12-json-scalar.json | execution-d0d471f6-0969-4379-8fb3-69d29a959f80 | 1-DEV | **500** (0.59 s); `text/html; charset=ISO-8859-1` (page meta); full body: title and Reason "Failed tracking custom fields; Caused by: [Input ProfileLocation: Root/Object; DocumentLocation: /Root/Object]: Expected START_OBJECT, found VALUE_STRING", `</html>` | As TC-08 with "... found VALUE_STRING" | As expected: ERROR; Start shape errors; S1 0 out; SEVERE "... Expected START_OBJECT, found VALUE_STRING"; no TC-F, BR-F, facade, TC-A, BR-A, C7; not 202 | PASS | - |
+| TC-23 (re-evaluated) | none (derived) | round 3 runs above; round 2 runs for carried-forward cases | 1-DEV | n/a | Every error non-2xx, never 202; TC-10 400 JSON with the text; TC-08, TC-09, TC-11, TC-12 runtime 500 HTML error page with the reason (row 31 exception, revision 11) | TC-10: 400 JSON with the text. TC-08, TC-09, TC-11, TC-12: 500, runtime HTML error page carrying the reason, execution ERROR, no facade, never 202, never empty. No error returned 202, an empty body or no response in round 3 or round 2 | PASS | - |
+| TC-27 (re-check) | none (inspection) | n/a | 1-DEV | n/a | C1 v4, C2 v2, C3 v1, C7 v3 (D9; revision 11 changes no component) | As expected (versions above); no redeploy | PASS | - |
+
+Round 3 executions: 6 C1 executions (TC-01 and TC-10 COMPLETE; TC-08, TC-09, TC-11, TC-12 ERROR as expected), 1 successful C7 send (TC-01), 1 facade call (TC-10, completed). No other C1 execution in the window. Every call answered within 1.2 s.
+
+### Final per-case status (all 27 cases)
+
+"Carried forward" = round 2 result kept unchanged, not re-run in round 3.
+
+| Case | Final result | Round of evidence | Execution ID(s) / evidence | Note |
+|------|--------------|-------------------|----------------------------|------|
+| TC-01 | PARTLY VERIFIED | Round 3 (regression) | execution-20e02625-34c9-4101-94c4-9e4a187dbae8 | Kafka: Boomi side only |
+| TC-02 | PARTLY VERIFIED | Round 2, carried forward | execution-8c54cf7a-2c15-4981-a4b9-4fbcbb95d6f4 | Runtime tracked values not observable (Process Reporting) |
+| TC-03 | PASS | Round 2, carried forward | none (404, no C1 execution) | - |
+| TC-04 | PARTLY VERIFIED | Round 2, carried forward | execution-0a9cff64-08aa-4b5b-b5e3-8a5df2938b0c | Body fidelity not observable |
+| TC-05 | PARTLY VERIFIED | Round 2, carried forward | execution-3d727c2b-a6cf-4299-bb43-03b72c282953 | Kafka: Boomi side only |
+| TC-06 | PARTLY VERIFIED | Round 2, carried forward | execution-fe17c21b-b4a5-4500-8740-5372bd4a096d | Kafka: Boomi side only |
+| TC-07 | PARTLY VERIFIED | Round 2, carried forward | execution-422750ba-9246-4bc9-876c-bd02fbe72906 | Outbound content not observable |
+| TC-08 | PASS | Round 3 | execution-9c60e7e0-e07c-469c-9e9b-3f6302180b4e | Revision 11 expectation; content type from page meta (header not printed by the tool) |
+| TC-09 | PASS | Round 3 | execution-7a61a0fc-3ef1-4254-8c14-ae713f5fc5c1 | As TC-08 |
+| TC-10 | PASS | Round 3 (regression) | execution-9744a98d-8c64-44c8-8036-cbc1965dd2fe | D4, V3 (400), V5, V6 (BR-F) |
+| TC-11 | PASS | Round 3 | execution-fa819dce-dd64-465d-8b8c-492afc7b4725 | As TC-08 |
+| TC-12 | PASS | Round 3 | execution-d0d471f6-0969-4379-8fb3-69d29a959f80 | As TC-08 |
+| TC-13 | NOT RUN | Review only | none | User decision ("C, review only for now"); reviewer R1 to R4, R6, R7, R9; V1, V6, V9 runtime unconfirmed (F2, F3). Kafka did not fail by itself |
+| TC-14 | NOT RUN | Review only | none | Never forced; facade completed in TC-10; reviewer R5, R7, TC-20 |
+| TC-15 | NOT RUN | User decision | none | "TC-15 not run is fine" |
+| TC-16 | PARTLY VERIFIED | Round 2, carried forward | 10 executions listed in Round 2 | Topic count: Boomi side only |
+| TC-17 | PASS | Round 2, carried forward | inspection | - |
+| TC-18 | PARTLY VERIFIED | Round 2, carried forward | inspection | Deployments in other environments not observable |
+| TC-19 | PASS | Round 2, carried forward | inspection | - |
+| TC-20 | PASS | Round 2, carried forward | inspection | C1 still v4 (round 3 version check); 0 Notify |
+| TC-21 | PASS | Round 2, carried forward | inspection | - |
+| TC-22 | PASS | Round 2, carried forward (runtime part re-confirmed by TC-10 round 3) | inspection | - |
+| TC-23 | PASS | Round 3 (re-evaluated) | derived | Revision 11 row 31 exception |
+| TC-24 | PASS | Round 2, carried forward | document check | - |
+| TC-25 | PARTLY VERIFIED | Round 2, carried forward | execution-08b032da-1f7a-45f0-8567-7a33395e2690 | Kafka: Boomi side only |
+| TC-26 | PARTLY VERIFIED | Round 2, carried forward | execution-ec9398c5-472a-4a31-aef2-abdd6617a78b | Kafka: Boomi side only |
+| TC-27 | PASS | Round 3 (re-check) | version history | - |
+
+Final counts: **PASS 14** (TC-03, TC-08, TC-09, TC-10, TC-11, TC-12, TC-17, TC-19, TC-20, TC-21, TC-22, TC-23, TC-24, TC-27); **FAIL 0**; **NOT RUN 3** (TC-13, TC-14, TC-15); **PARTLY VERIFIED 10** (TC-01, TC-02, TC-04, TC-05, TC-06, TC-07, TC-16, TC-18, TC-25, TC-26). Total 27.
+
+### Defects
+
+| ID | Case | Observed | Expected | Severity |
+|----|------|----------|----------|----------|
+| none | - | No new defect in round 3 | - | - |
+
+D-2-01 (round 2) is closed: revision 11 changed the expected body to the runtime's default HTML error page with the internal error reason, and round 3 observed exactly that for TC-08, TC-09, TC-11 and TC-12. D-1-01 stays closed (user decision, row 31).
+
+Observation (not a defect; the spec records it as accepted, row 31): these 500 pages expose Boomi internal error text (profile location and JSON parser message) to the caller (Sitecore through APIM); the APIM team may mask it.
+
+### Temporary Notify shapes
+
+| Process | Shape | Reason | Added | Removed |
+|---------|-------|--------|-------|---------|
+| none | none | No Notify shape was needed; every case was checked from HTTP responses, execution records, process logs and component versions | - | - |
+
+No temporary Notify shape was added in round 3. C1 is still v4 (not pushed or redeployed), which has no Notify shape (`shapetype="notify"` count 0). None remains in any process.
+
+### Pre-production note (not a test case)
+
+Unchanged: the Azure APIM backend timeout for the operation that calls `/ws/rest/gb-cg-leads/v1/leads` should be at least 30 s before production (spec "Deployment note: APIM backend timeout"). Action for the user; nothing was changed in APIM.
