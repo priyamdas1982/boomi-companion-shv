@@ -2,11 +2,11 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: 1 - designer revision 10 (second pass) DRAFT - OPEN QUESTIONS (2026-10-12): Q2 whether a missing or empty email is rejected with 400 (row 32). Row 9 kept on C3 and C7; D-1-01 behaviour accepted as row 31. Put to the user.
-- Round: 1 / 3
-- Spec approved: yes (user: "i approve", revision 9)
-- Spec approved on: 2026-10-12 (revision 9; earlier approvals superseded)
-- Spec hash: 449c119cc3d76fcd3edf91e564459ba629abcfaf2cadbbceab6488b32a917078
+- Step: 3 - round 2: reviewer (spec revision 10) and tester write-cases in parallel, then tester execute. Revision 10 changes no component (D9: no developer run).
+- Round: 2 / 3
+- Spec approved: yes (user, 2026-10-12: "can you do this or not? Use all the boomi practoces and finish this", taken as approval of revision 10 with the recommended option a)
+- Spec approved on: 2026-10-12 (revision 10; earlier approvals superseded)
+- Spec hash: 31bb19b997598766015ae0f3b66bf761a1e6eca0692beb7083e290c30d02c293
 - Kafka topics confirmed: `gb-cg.q.leads.in.insert` and `gb-cg.q.leads.in.retry` (user, 2026-10-09: "I have just created gb-cg.q.leads.in.retry and gb-cg.q.leads.in.insert in confluent")
 
 ## Components
@@ -23,7 +23,7 @@ Written only by the `/build-interface` orchestrator.
 
 ## Status
 
-- Open findings: 0 blocker, 0 major, 2 minor (F-1R-01, F-1R-02; round 1 re-review)
+- Open findings: 0 blocker, 0 major, 0 minor pending round 2 review (F-1R-01, F-1R-02 addressed in spec revision 10; D-1-01 closed by user decision, row 31)
 - Disputed findings: none
 - Last test result: round 1 (2026-10-12): 8 PASS, 5 FAIL (TC-08, TC-09, TC-11, TC-12, TC-23), 3 NOT RUN (TC-13, TC-14, TC-15), 8 PARTLY VERIFIED; open defect D-1-01 (major). No temporary Notify.
 
