@@ -2,11 +2,11 @@
 
 Written only by the `/build-interface` orchestrator.
 
-- Step: round 2 done, not Done (4 FAIL on D-2-01). Round 3: designer fixes spec wording (D-2-01 response body is the runtime default HTML error page with the error reason, not empty; F-2-01), then reviewer and tester (TC-08, TC-09, TC-11, TC-12). No component change.
-- Round: 2 / 3
-- Spec approved: yes (user, 2026-10-12: "can you do this or not? Use all the boomi practoces and finish this", taken as approval of revision 10 with the recommended option a)
-- Spec approved on: 2026-10-12 (revision 10; earlier approvals superseded)
-- Spec hash: 31bb19b997598766015ae0f3b66bf761a1e6eca0692beb7083e290c30d02c293
+- Step: 3/5 - round 3: reviewer and tester (re-mark and re-run TC-08, TC-09, TC-11, TC-12, TC-23) against spec revision 11 (wording only, no component change).
+- Round: 3 / 3
+- Spec approved: yes (revision 11, wording only; under the user's 2026-10-12 instruction "can you do this or not? Use all the boomi practoces and finish this")
+- Spec approved on: 2026-10-12 (revision 11; earlier approvals superseded)
+- Spec hash: 3984711dde544ab3e30a667b4e165991366697ed64cadef2f51e46c49094d113
 - Kafka topics confirmed: `gb-cg.q.leads.in.insert` and `gb-cg.q.leads.in.retry` (user, 2026-10-09: "I have just created gb-cg.q.leads.in.retry and gb-cg.q.leads.in.insert in confluent")
 
 ## Components
