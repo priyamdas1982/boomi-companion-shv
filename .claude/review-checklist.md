@@ -117,7 +117,7 @@ Source: CLAUDE.md, "SHV Energy build rules" > "Cache Notification Facade".
 Source: CLAUDE.md, "SHV Energy build rules" > "Connector extensions".
 
 - [ ] **EXT-01** [blocker] Every connection used by the process has its settings (URLs, hosts, ports, credentials and similar) declared as extensible in `<bns:processOverrides>`.
-- [ ] **EXT-02** [blocker] Every connector operation's environment-dependent properties are declared as extensible in `<bns:processOverrides>`.
+- [ ] **EXT-02** [blocker] Every Listen operation's environment-dependent properties are declared as extensible in `<bns:processOverrides>`. Operations with any other action (for example Kafka Produce) cannot be extended in Boomi and are exempt; see the exception in CLAUDE.md.
 - [ ] **EXT-03** [blocker] No environment-specific connector value is fixed in component XML without also being extensible.
 
 ## Environment
